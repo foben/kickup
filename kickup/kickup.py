@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import threading
 import state as st
 import api
 import json
@@ -80,7 +81,14 @@ def handle_button(payload, kickup, action):
         kickup.start_match()
     elif button_cmd == 'resolve':
         if kickup.resolve_match():
-            pack.packeroo_match(kickup)
+            def pack_async(kickup):
+                import time
+                time.sleep(3)
+                logging.info(f'Start match entry for kickup { kickup.num }')
+                pack.packeroo_match(kickup)
+            thread = threading.Thread(target=pack_async, kwargs={'kickup': kickup})
+            thread.start()
+            logging.info(f'Started thread for packeroo entry of Kickup { kickup.num }')
 
 def invalid_command(command):
     return jsonify( {

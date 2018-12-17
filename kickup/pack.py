@@ -4,6 +4,7 @@ import subprocess as sp
 from http.cookiejar import CookieJar
 import os
 import urllib3
+import logging
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 ID_MAPPINGS = {
@@ -31,6 +32,8 @@ def packeroo_match(kickup):
 
     jar, url, resolve_token = get_resolve_url_and_token(jar)
     resolve_match(jar, url, resolve_token, kickup)
+    logging.info(f'Match entry for kickup { kickup.num } complete')
+
 
 def resolve_match(jar, url, resolve_token, kickup):
     resp = requests.post(
