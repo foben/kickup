@@ -61,7 +61,7 @@ def att_players(kickup):
 def pairing(kickup):
     return [
     {
-        "text": f"<@{ kickup.pairing.red_goal }>\n<@{ kickup.pairing.red_strike }>",
+        "text": f":goal_net:<@{ kickup.pairing.red_goal }>\n:athletic_shoe:<@{ kickup.pairing.red_strike }>",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#FF0000",
@@ -75,7 +75,7 @@ def pairing(kickup):
         "attachment_type": "default",
     },
     {
-        "text": f"<@{ kickup.pairing.blue_strike }>\n<@{ kickup.pairing.blue_goal }>",
+        "text": f":athletic_shoe:<@{ kickup.pairing.blue_strike }>\n:goal_net:<@{ kickup.pairing.blue_goal }>",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#0000FF",
