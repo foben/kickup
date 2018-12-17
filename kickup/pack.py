@@ -3,6 +3,8 @@ import bs4
 import subprocess as sp
 from http.cookiejar import CookieJar
 import os
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 ID_MAPPINGS = {
         'UCYF8JAFL': '1279', #me
@@ -25,7 +27,45 @@ def packeroo_match(kickup):
     jar = get_logged_in_cookie(login_token, jar)
     match_token, jar = get_form_token('https://app.packeroo.de/matches/create/373', jar)
 
-    create_match(jar, match_token, kickup)
+    jar = create_match(jar, match_token, kickup)
+
+    jar, url, resolve_token = get_resolve_url_and_token(jar)
+    resolve_match(jar, url, resolve_token, kickup)
+
+def resolve_match(jar, url, resolve_token, kickup):
+    resp = requests.post(
+            url,
+            files = {
+                '_token': (None, resolve_token),
+                'result_team_one': (None, str(kickup.score_red)),
+                'result_team_two': (None, str(kickup.score_blue)),
+            },
+            headers = {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Host': 'app.packeroo.de',
+                'Origin': 'https://app.packeroo.de',
+                'Referer': 'https://app.packeroo.de/matches/create/373',
+                'Expect': '100-continue',
+            },
+            cookies=jar,
+            verify=False,
+            allow_redirects=False,
+    )
+
+
+def get_resolve_url_and_token(jar):
+    resp = requests.get(
+            'https://app.packeroo.de/leagues/373',
+            verify=False,
+            allow_redirects=False,
+            cookies=jar,
+    )
+    soup = bs4.BeautifulSoup(resp.content, 'html.parser')
+    save_form = soup.find('form', {'id': 'save-score-form'})
+    url = save_form.attrs['action']
+    token_input = save_form.findAll('input', {'name': '_token'})[0]
+    token = token_input.attrs['value']
+    return resp.cookies, url, token
 
 def create_match(jar, match_token, kickup):
     resp = requests.post(
@@ -55,6 +95,7 @@ def create_match(jar, match_token, kickup):
             verify=False,
             allow_redirects=False,
     )
+    return resp.cookies
 
 
 def get_logged_in_cookie(login_token, jar):
@@ -77,9 +118,7 @@ def get_logged_in_cookie(login_token, jar):
             verify=False,
             allow_redirects=False,
     )
-    print(resp.headers['Location'])
     return resp.cookies
-
 
 def get_form_token(url, in_jar):
     resp = requests.get(
@@ -98,8 +137,3 @@ def get_form_token(url, in_jar):
         if inp['name'] == '_token':
             return (inp['value'], out_jar)
     return None
-
-def print_headers(res, pre='<'):
-    for k, v in res.headers.items():
-        print(f'{pre} {k}: {v}')
-
