@@ -54,6 +54,8 @@ class KickUp():
         self.state = RUNNING
 
     def resolve_match(self):
+        if self.state == RESOLVED:
+            return False
         if self.score_blue != 6 and self.score_red != 6:
             self.warnings.add('At least one team needs 6 goals!')
             return False
