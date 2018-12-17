@@ -2,6 +2,11 @@ from flask import jsonify
 import state as st
 
 def respond(kickup):
+    if kickup is None:
+        return jsonify( {
+                'response_type': 'in_channel',
+                'text': ':skull_and_crossbones: Sorry, this kickup is dead',
+        })
     if kickup.state == st.CANCELLED:
         return jsonify( {
                 'response_type': 'in_channel',

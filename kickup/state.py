@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import random
+import logging
 
 KICKUPS = {}
 
@@ -41,8 +42,10 @@ class KickUp():
 
     def add_player(self, player_id):
         if player_id in self.players:
+            logging.info(f'Player "{ player_id }" is already part of kickup { self.num }')
             return False
         else:
+            logging.info(f'Player "{ player_id }" joined kickup { self.num }')
             self.players.add(player_id)
             return True
 
@@ -50,11 +53,13 @@ class KickUp():
         if len(self.players) < 4:
             self.warnings.add('Need at least 4 players to start!')
             return
+        logging.info(f'Kickup Match { self.num } has been started')
         self.pairing = Pairing(*random.sample(self.players, 4))
         self.state = RUNNING
 
     def resolve_match(self):
         if self.state == RESOLVED:
+            logging.warning(f'Kickup { self.num } was resolved before!')
             return False
         if self.score_blue != 6 and self.score_red != 6:
             self.warnings.add('At least one team needs 6 goals!')
@@ -62,6 +67,7 @@ class KickUp():
         if self.score_blue == 6 and self.score_red == 6:
             self.warnings.add('Both teams can\'t have score 6!')
             return False
+        logging.info(f'Kickup { self.num } has been resolved RED { self.score_red }:{ self.score_blue } BLUE')
         self.state = RESOLVED
         return True
 
