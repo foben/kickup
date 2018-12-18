@@ -68,6 +68,7 @@ def packeroo_leaderboard():
             'slack_id': get_slack_by_pack(player_id),
             'points': points,
         })
+    logging.info(f'Retrieved leaderboard of length { len(leaderboard) }')
     return leaderboard
 
 def resolve_match(jar, url, resolve_token, kickup):

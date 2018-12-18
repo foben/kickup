@@ -29,12 +29,15 @@ app = Flask(__name__)
 @app.route("/kickup", methods=['GET', 'POST'])
 def hello():
     command, _, args = request.form['text'].strip().partition(' ')
-    if not command == 'new':
-        return invalid_command(command)
-    else:
+    if command == 'new':
         new_kickup = st.new_kickup()
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
         return api.respond(new_kickup)
+    elif command == 'leaderboard':
+        leaderboard = pack.packeroo_leaderboard()
+        return api.leaderboard_resp(leaderboard)
+    else:
+        return invalid_command(command)
 
 @app.route("/interactive", methods=['GET', 'POST'])
 def interactive():
@@ -93,7 +96,7 @@ def handle_button(payload, kickup, action):
 def invalid_command(command):
     return jsonify( {
             'response_type': 'ephemeral',
-            'text': 'Sorry, I don\'t know what "{ command }" means',
+            'text': f'Sorry, I don\'t know what "{ command }" means',
     })
 
 if __name__ == '__main__':
