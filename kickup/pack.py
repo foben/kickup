@@ -3,6 +3,7 @@ import bs4
 import subprocess as sp
 from http.cookiejar import CookieJar
 import os
+import re
 import urllib3
 import logging
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -21,6 +22,11 @@ ID_MAPPINGS = {
         'UCXF74YAW': '1276', #cmu
 }
 
+def get_slack_by_pack(pack_id):
+    for slack, pack in ID_MAPPINGS.items():
+        if pack == pack_id:
+            return slack
+    return None
 
 def packeroo_match(kickup):
     jar = CookieJar()
@@ -34,6 +40,35 @@ def packeroo_match(kickup):
     resolve_match(jar, url, resolve_token, kickup)
     logging.info(f'Match entry for kickup { kickup.num } complete')
 
+def packeroo_leaderboard():
+    logging.info('Retrieving Packeroo leaderboard')
+    jar = CookieJar()
+    login_token, jar = get_form_token('https://app.packeroo.de/login', jar)
+    jar = get_logged_in_cookie(login_token, jar)
+
+    resp = requests.get(
+            'https://app.packeroo.de/leagues/373/table',
+            cookies=jar,
+            verify=False,
+    )
+    parsed = resp.json()
+
+    leaderboard = []
+    for e in parsed['data']:
+        pos = e['pos']
+        id_match = re.findall('https://app.packeroo.de/player/(\d*)"', e['name'])
+        if id_match:
+            player_id = id_match[0]
+        else:
+            player_id = '-1'
+        points = e['points']
+        leaderboard.append({
+            'position': pos,
+            'pack_id': player_id,
+            'slack_id': get_slack_by_pack(player_id),
+            'points': points,
+        })
+    return leaderboard
 
 def resolve_match(jar, url, resolve_token, kickup):
     resp = requests.post(
