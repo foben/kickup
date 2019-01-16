@@ -26,7 +26,7 @@ dictConfig({
 app = Flask(__name__)
 
 
-@app.route("/kickup", methods=['GET', 'POST'])
+@app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
     command, _, args = request.form['text'].strip().partition(' ')
     if command == 'new':
@@ -39,7 +39,7 @@ def hello():
     else:
         return invalid_command(command)
 
-@app.route("/interactive", methods=['GET', 'POST'])
+@app.route("/api/interactive", methods=['GET', 'POST'])
 def interactive():
     payload = json.loads(request.form['payload'])
     kickup_num = int(payload['callback_id'])
