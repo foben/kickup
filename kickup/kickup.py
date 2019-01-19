@@ -28,6 +28,8 @@ app = Flask(__name__)
 
 @app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
+    if not 'text' in request.form:
+        return invalid_command('no-command')
     command, _, args = request.form['text'].strip().partition(' ')
     if command == 'new':
         new_kickup = st.new_kickup()
