@@ -40,7 +40,7 @@ def hello():
         return api.leaderboard_resp(leaderboard)
     elif command == 'elo':
         leaderboard = elo.leaderboard()
-        return api.leaderboard_resp(leaderboard)
+        return api.elo_leaderboard_resp(leaderboard)
     else:
         return invalid_command(command)
 

@@ -241,3 +241,11 @@ def leaderboard_resp(leaderboard):
             'response_type': 'in_channel',
             'text': lb_text,
     })
+
+def elo_leaderboard_resp(leaderboard):
+    lb_text = '\n'.join([f'{x["position"]:2}. {x["slack_id"]:20}   {x["points"]:5}' for x in leaderboard])
+    lb_text = f'```\n{ lb_text }\n```'
+    return jsonify( {
+            'response_type': 'in_channel',
+            'text': lb_text,
+    })
