@@ -18,13 +18,12 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': 'DEBUG',
         'handlers': ['wsgi']
     }
 })
 
 app = Flask(__name__)
-
 
 @app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
@@ -49,6 +48,7 @@ def interactive():
     if not kickup:
         logging.warning(f'Could not find kickup with id { kickup_num }')
         return api.respond(None)
+    logging.debug(f'Retrieved kickup with id { kickup_num }')
     action = payload['actions'][0]
     if action['type'] == 'select':
         handle_select(kickup, action)
