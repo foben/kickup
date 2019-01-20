@@ -4,6 +4,7 @@ import state as st
 import api
 import json
 import pack
+import elo
 from logging.config import dictConfig
 import logging
 
@@ -36,6 +37,9 @@ def hello():
         return api.respond(new_kickup)
     elif command == 'leaderboard':
         leaderboard = pack.packeroo_leaderboard()
+        return api.leaderboard_resp(leaderboard)
+    elif command == 'elo':
+        leaderboard = elo.leaderboard()
         return api.leaderboard_resp(leaderboard)
     else:
         return invalid_command(command)
