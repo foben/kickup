@@ -38,6 +38,29 @@ def player_by_id(obj_id):
         return None
     return Player(**player)
 
+def player_by_slack_id(slack_id):
+    player = mongo().players.find_one({ 'slack_id': slack_id })
+    if not player:
+        return None
+    return Player(**player)
+
+def save_kickup_match(kickup):
+    try:
+        match = {
+            'red_goal': player_by_slack_id(kickup.pairing.red_goal)._id,
+            'red_strike': player_by_slack_id(kickup.pairing.red_strike)._id,
+            'blue_goal': player_by_slack_id(kickup.pairing.blue_goal)._id,
+            'blue_strike': player_by_slack_id(kickup.pairing.blue_strike)._id,
+            'score_red': kickup.score_red,
+            'score_blue': kickup.score_blue,
+            'date': datetime.datetime.utcnow(),
+        }
+        mongo().matches.insert_one(match)
+
+    except Exception as e:
+        logging.error(f'Could not save kickup: {e}')
+
+
 def matches_sorted():
     matches = [Match(**match) for match in mongo().matches.find()]
     return sorted(matches, key=lambda m: m.date)
