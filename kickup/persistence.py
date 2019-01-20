@@ -1,3 +1,4 @@
+import os
 import datetime
 import logging
 from pymongo import MongoClient
@@ -26,7 +27,8 @@ class Match:
 def mongo():
     if 'mongo' not in g:
         logging.debug('Setting up new MongoDB client')
-        g.mongo = MongoClient(connectTimeoutMS=2000, serverSelectionTimeoutMS=3000)
+        mongo_pass = os.environ['MONGO_PASS']
+        g.mongo = MongoClient(host=f'mongodb://kickup:{ mongo_pass }@127.0.0.1/kickup', connectTimeoutMS=2000, serverSelectionTimeoutMS=3000)
     # return kickup database
     return g.mongo.kickup
 
