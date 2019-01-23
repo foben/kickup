@@ -22,6 +22,7 @@ ID_MAPPINGS = {
         'UCXF74YAW': '1276', #cmu
         'UFD23UJV8': '1371', #tobias
         'UFD4R8TDE': '1372', #florian
+        'UFL1ME8S1': '1398', #Maximilian
 }
 
 def get_slack_by_pack(pack_id):
