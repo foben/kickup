@@ -83,7 +83,7 @@ def handle_button(payload, kickup, action):
         kickup.add_player('UD12PG33M') #marv
         kickup.add_player('UD276006T') #ansg
         kickup.add_player('UCYCRPM37') #neiser
-        kickup.add_player('UCW4HSBSM') #alex
+        kickup.add_player('UFL1ME8S1') #max
     elif button_cmd == 'cancel':
         kickup.cancel()
     elif button_cmd == 'start':

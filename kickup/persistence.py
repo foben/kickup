@@ -1,6 +1,7 @@
 import os
 import datetime
 import logging
+import traceback
 from pymongo import MongoClient
 from dataclasses import dataclass
 from bson import ObjectId
@@ -59,6 +60,7 @@ def save_kickup_match(kickup):
 
     except Exception as e:
         logging.error(f'Could not save kickup: {e}')
+        logging.error(traceback.format_exc())
 
 
 def matches_sorted():

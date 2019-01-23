@@ -17,7 +17,7 @@ player_list = [
     {'name': 'Christoph M.', 'slack_id': 'UCXF74YAW', 'pack_id': '1276'},
     {'name': 'Tobias', 'slack_id': 'UFD23UJV8', 'pack_id': '1371'},
     {'name': 'Florian', 'slack_id': 'UFD4R8TDE', 'pack_id': '1372'},
-    {'name': 'Maximilian', 'slack_id': 'UFL1ME8S1', '1398': '1372'},
+    {'name': 'Maximilian', 'slack_id': 'UFL1ME8S1', 'pack_id': '1398'},
 ]
 
 mongo_pw = os.environ['MONGO_PASS']
