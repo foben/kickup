@@ -6,6 +6,7 @@ import os
 import re
 import urllib3
 import logging
+import persistence
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 ID_MAPPINGS = {

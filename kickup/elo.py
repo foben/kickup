@@ -3,40 +3,46 @@ from collections import defaultdict
 
 def leaderboard():
     scoring = EloScore(K=30, F=100, initial=1000)
-    point_list = calculate_for_all(scoring)
-    return [{ 'position': i+1, 'slack_id': p[0], 'points': int(p[1]), } for i, p in enumerate(point_list)]
+    return calculate_for_all(scoring)
+    #return [{ 'position': i+1, 'slack_id': p[0], 'points': int(p[1]), } for i, p in enumerate(point_list)]
 
 def calculate_for_all(scoring):
-    points = defaultdict(lambda: scoring.initial_score())
+    player_points = defaultdict(lambda: {'score': scoring.initial_score(), 'count': 0})
     for match in persistence.matches_sorted():
         inputs = {
                 'red_goal': {
                     'id': match.red_goal,
-                    'points': points[match.red_goal]
+                    'points': player_points[match.red_goal]['score']
                 },
                 'red_strike': {
                     'id': match.red_strike,
-                    'points': points[match.red_strike]
+                    'points': player_points[match.red_strike]['score']
                 },
                 'blue_goal': {
                     'id': match.blue_goal,
-                    'points': points[match.blue_goal]
+                    'points': player_points[match.blue_goal]['score']
                 },
                 'blue_strike': {
                     'id': match.blue_strike,
-                    'points': points[match.blue_strike]
+                    'points': player_points[match.blue_strike]['score']
                 },
         }
         deltas = scoring.delta_score(inputs, match.score_red, match.score_blue)
         for _id, _delta in deltas.items():
-            points[_id] += _delta
+            player_points[_id]['score'] += _delta
+            player_points[_id]['count'] += 1
+    print(deltas)
     point_list = []
-    for _id, _points in points.items():
-        player = persistence.player_by_id(_id)
+    for player_id, player_aggregate in player_points.items():
+        player = persistence.player_by_id(player_id)
         if not player:
             continue
-        point_list.append( (player.name, _points) )
-    point_list = sorted(point_list, key=lambda e: e[1], reverse=True)
+        point_list.append( {
+            'name': player.name,
+            'score': player_aggregate['score'],
+            'matchcount': player_aggregate['count'],
+            })
+    point_list = sorted(point_list, key=lambda e: e['score'], reverse=True)
     return point_list
 
 class EloScore():

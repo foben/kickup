@@ -243,8 +243,26 @@ def leaderboard_resp(leaderboard):
     })
 
 def elo_leaderboard_resp(leaderboard):
-    lb_text = '\n'.join([f'{x["position"]:2}. {x["slack_id"]:20}   {x["points"]:5}' for x in leaderboard])
-    lb_text = f'```\n{ lb_text }\n```'
+    e = ""
+    pad_pos = 2
+    pad_name = 25
+    pad_games = 4
+    pad_score = 5
+    lines = [
+            f'{e:{pad_pos}}  {"Name":<{pad_name}} {"Matches":<{pad_games}}     {"Score":<{pad_score}}',
+            "-" * 47,
+    ]
+
+    for pos, entry in enumerate(leaderboard):
+        col_pos = f'{pos+1:{pad_pos}}.'
+        col_name = f'{entry["name"][0:25]:{pad_name}}'
+        col_games = f'{entry["matchcount"]:{pad_games}}'
+        score = int(entry["score"])
+        col_points = f'{int(entry["score"]):{pad_score}}'
+        lines.append(f'{col_pos} {col_name} {col_games}        {col_points}')
+    #lb_text = '\n'.join([f'{x["position"]:2}. {x["slack_id"]:20}   {x["points"]:5}' for x in leaderboard])
+    lb_text = "\n".join(lines)
+    lb_text = f'```{lb_text}```'
     return jsonify( {
             'response_type': 'in_channel',
             'text': lb_text,
