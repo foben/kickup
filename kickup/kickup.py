@@ -5,6 +5,9 @@ import api
 import json
 import pack
 import elo
+import persistence
+import delayed
+import pprint
 from logging.config import dictConfig
 import logging
 
@@ -28,8 +31,8 @@ app = Flask(__name__)
 
 @app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
-    if not 'text' in request.form:
-        return invalid_command('no-command')
+    if not 'text' in request.form or request.form['text'] == "":
+        return api.error_response('Invalid command')
     command, _, args = request.form['text'].strip().partition(' ')
     if command == 'new':
         new_kickup = st.new_kickup()
@@ -42,11 +45,12 @@ def hello():
         leaderboard = elo.leaderboard()
         return api.elo_leaderboard_resp(leaderboard)
     else:
-        return invalid_command(command)
+        return api.error_response(f'Invalid command: "{ command }"')
 
 @app.route("/api/interactive", methods=['GET', 'POST'])
 def interactive():
     payload = json.loads(request.form['payload'])
+    #pprint.pprint(payload)
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
     if not kickup:
@@ -54,12 +58,16 @@ def interactive():
         return api.respond(None)
     logging.debug(f'Retrieved kickup with id { kickup_num }')
     action = payload['actions'][0]
-    if action['type'] == 'select':
-        handle_select(kickup, action)
-    else:
-        handle_button(payload, kickup, action)
-
-    return api.respond(kickup)
+    try:
+        if action['type'] == 'select':
+            handle_select(kickup, action)
+        else:
+            handle_button(payload, kickup, action)
+    except KickupException as ke:
+        delayed.delayed_error(ke, payload['response_url'])
+        logging.error(ke)
+    finally:
+        return api.respond(kickup)
 
 def handle_select(kickup, action):
     action_name = action['name']
@@ -78,7 +86,10 @@ def handle_select(kickup, action):
 def handle_button(payload, kickup, action):
     button_cmd = action['value']
     if button_cmd == 'join':
-        kickup.add_player(payload['user']['id'])
+        user_slack_id = payload['user']['id']
+        if not persistence.player_by_slack_id(user_slack_id):
+            raise KickupException(f'Could not find registered player with your Slack ID!')
+        kickup.add_player(user_slack_id)
     elif button_cmd == 'dummyadd':
         kickup.add_player('UD12PG33M') #marv
         kickup.add_player('UD276006T') #ansg
@@ -90,6 +101,8 @@ def handle_button(payload, kickup, action):
         kickup.start_match()
     elif button_cmd == 'resolve':
         if kickup.resolve_match():
+            logging.info(f'Kickup { kickup.num } resolved, persisting to DB')
+            persistence.save_kickup_match(kickup)
             def pack_async(kickup):
                 import time
                 time.sleep(3)
@@ -99,11 +112,8 @@ def handle_button(payload, kickup, action):
             thread.start()
             logging.info(f'Started thread for packeroo entry of Kickup { kickup.num }')
 
-def invalid_command(command):
-    return jsonify( {
-            'response_type': 'ephemeral',
-            'text': f'Sorry, I don\'t know what "{ command }" means',
-    })
+class KickupException(Exception):
+    pass
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+    app.run(debug=True, host='0.0.0.0', port=8000)

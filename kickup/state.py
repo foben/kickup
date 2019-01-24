@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import random
 import logging
-import persistence
 
 KICKUPS = {}
 
@@ -69,8 +68,6 @@ class KickUp():
             self.warnings.add('Both teams can\'t have score 6!')
             return False
         logging.info(f'Kickup { self.num } has been resolved RED { self.score_red }:{ self.score_blue } BLUE')
-        logging.info(f'Saving Kickup { self.num } to database')
-        persistence.save_kickup_match(self)
         self.state = RESOLVED
         return True
 

@@ -249,3 +249,9 @@ def elo_leaderboard_resp(leaderboard):
             'response_type': 'in_channel',
             'text': lb_text,
     })
+
+def error_response(error_message):
+    return jsonify( {
+            'response_type': 'ephemeral',
+            'text': f':warning: { error_message }',
+    })
