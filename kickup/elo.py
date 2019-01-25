@@ -4,7 +4,6 @@ from collections import defaultdict
 def leaderboard():
     scoring = EloScore(K=30, F=100, initial=1000)
     return calculate_for_all(scoring)
-    #return [{ 'position': i+1, 'slack_id': p[0], 'points': int(p[1]), } for i, p in enumerate(point_list)]
 
 def calculate_for_all(scoring):
     player_points = defaultdict(lambda: {'score': scoring.initial_score(), 'count': 0})
@@ -31,7 +30,6 @@ def calculate_for_all(scoring):
         for _id, _delta in deltas.items():
             player_points[_id]['score'] += _delta
             player_points[_id]['count'] += 1
-    print(deltas)
     point_list = []
     for player_id, player_aggregate in player_points.items():
         player = persistence.player_by_id(player_id)
@@ -43,7 +41,15 @@ def calculate_for_all(scoring):
             'matchcount': player_aggregate['count'],
             })
     point_list = sorted(point_list, key=lambda e: e['score'], reverse=True)
-    return point_list
+    return {
+            'board': point_list,
+            'last': last_result(deltas),
+    }
+
+def last_result(delta):
+    res = [(persistence.player_by_id(p), int(d)) for p, d in delta.items()]
+    res.sort(key=lambda p: p[1], reverse=True)
+    return res
 
 class EloScore():
 

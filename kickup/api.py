@@ -253,19 +253,29 @@ def elo_leaderboard_resp(leaderboard):
             "-" * 47,
     ]
 
-    for pos, entry in enumerate(leaderboard):
+    for pos, entry in enumerate(leaderboard['board']):
         col_pos = f'{pos+1:{pad_pos}}.'
         col_name = f'{entry["name"][0:25]:{pad_name}}'
         col_games = f'{entry["matchcount"]:{pad_games}}'
         score = int(entry["score"])
         col_points = f'{int(entry["score"]):{pad_score}}'
         lines.append(f'{col_pos} {col_name} {col_games}        {col_points}')
-    #lb_text = '\n'.join([f'{x["position"]:2}. {x["slack_id"]:20}   {x["points"]:5}' for x in leaderboard])
     lb_text = "\n".join(lines)
-    lb_text = f'```{lb_text}```'
+
+    last = list(filter(lambda e: e is not None, leaderboard['last']))
+    pos_score = next(filter(lambda s: s >= 0, map(lambda e: e[1], last)),0)
+    neg_score = next(filter(lambda s: s < 0, map(lambda e: e[1], last)),0)
+    pos_names = ", ".join([e[0].name for e in filter(lambda e: e[1] >=0, last)])[0:50]
+    neg_names = ", ".join([e[0].name for e in filter(lambda e: e[1] <0, last)])[0:50]
+
+    pos_line = f'↗️  {pos_names:40} +{pos_score}'
+    neg_line = f'↘️  {neg_names:40} -{abs(neg_score)}'
+
+    res_text = f'*Elo Scores:*```\n{lb_text}```\n\n*Last Result:*\n```{pos_line}\n{neg_line}```'
+
     return jsonify( {
             'response_type': 'in_channel',
-            'text': lb_text,
+            'text': res_text,
     })
 
 def error_response(error_message):
