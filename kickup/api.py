@@ -116,7 +116,7 @@ class EmojiWinConfig:
 
 def emoji_score(kickup):
     emoji_config = {
-        6: EmojiWinConfig('DESTROYED', ':goberserk:', ':sob:'),
+        6: EmojiWinConfig('DESTROYED', ':godmode:', ':sob:'),
         5: EmojiWinConfig('KNOCKOUT', ':punch:', ':face_with_head_bandage:'),
         4: EmojiWinConfig('MERCY', ':muscle:', ':dizzy:'),
         3: EmojiWinConfig('DOMINATED', ':stuck_out_tongue_closed_eyes:', ':astonished:'),
