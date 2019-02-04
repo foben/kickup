@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from flask import jsonify
 import state as st
 
@@ -97,12 +99,37 @@ def result(kickup):
     if kickup.state != st.RESOLVED:
         return []
     return [{
-        "text": f"*RESULT:* { kickup.score_red }:{ kickup.score_blue }",
+        "text": emoji_score(kickup),
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#33CC33",
         "attachment_type": "default",
     }]
+
+
+@dataclass
+class EmojiWinConfig:
+    name: str
+    winner_emoji: str
+    loser_emoji: str
+
+
+def emoji_score(kickup):
+    emoji_config = {
+        6: EmojiWinConfig('DESTROYED', ':goberserk:', ':sob:'),
+        5: EmojiWinConfig('KNOCKOUT', ':punch:', ':face_with_head_bandage:'),
+        4: EmojiWinConfig('MERCY', ':muscle:', ':dizzy:'),
+        3: EmojiWinConfig('DOMINATED', ':stuck_out_tongue_closed_eyes:', ':astonished:')
+        2: EmojiWinConfig('NICE GAME', ':star_struck:', ':unamused:')
+        1: EmojiWinConfig('NICE GAME', ':star_struck:', ':unamused:')
+    }[abs(kickup.score_blue - kickup.score_red)]
+
+    red_won = kickup.score_red > kickup.score_blue
+    red_emoji = emoji_config.winner_emoji if red_won else emoji_config.loser_emoji
+    blue_emoji = emoji_config.winner_emoji if not red_won else emoji_config.loser_emoji
+
+    return f"*{ emoji_config.name }*: {red_emoji}{ kickup.score_red }:{ kickup.score_blue }{blue_emoji}"
+
 
 def att_buttons(kickup):
     if kickup.state == st.OPEN:
