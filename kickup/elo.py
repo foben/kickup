@@ -51,6 +51,7 @@ def last_result(delta):
     res.sort(key=lambda p: p[1], reverse=True)
     return res
 
+
 class EloScore():
 
     def __init__(self, K, F, initial):
@@ -76,6 +77,55 @@ class EloScore():
                 inputs['blue_goal']['id']: adj_blue,
                 inputs['blue_strike']['id']: adj_blue,
         }
+
+
+def leaderboard_gd100():
+    scoring = EloGoalDiffScore(K=30, F=100, initial=1000)
+    return calculate_for_all(scoring)
+
+
+def leaderboard_gd400():
+    scoring = EloGoalDiffScore(K=30, F=400, initial=1000)
+    return calculate_for_all(scoring)
+
+#Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
+class EloGoalDiffScore():
+
+    def __init__(self, K, F, initial):
+        self.K = K
+        self.F = F
+        self. initial = initial
+
+    def initial_score(self):
+        return self.initial
+
+    def delta_score(self, inputs, score_red, score_blue):
+        w_red = 0 if score_red < score_blue else 1
+        w_blue = 0 if score_blue < score_red else 1
+
+        points_red = (inputs['red_goal']['points'] + inputs['red_strike']['points']) / 2
+        points_blue = (inputs['blue_goal']['points'] + inputs['blue_strike']['points']) / 2
+        we_red = 1 / (10**((points_blue - points_red)/self.F) + 1)
+        we_blue = 1 / (10**((points_red - points_blue)/self.F) + 1)
+
+        g = self.goal_diff_coefficient(score_red, score_blue)
+        p_red = self.K * g * (w_red - we_red)
+        p_blue = self.K * g * (w_blue - we_blue)
+        return {
+            inputs['red_goal']['id']: p_red,
+            inputs['red_strike']['id']: p_red,
+            inputs['blue_goal']['id']: p_blue,
+            inputs['blue_strike']['id']: p_blue,
+        }
+
+    def goal_diff_coefficient(self, goals_red, goals_blue):
+        score_diff = abs(goals_red - goals_blue)
+        if score_diff == 0 or score_diff == 1:
+            return 1
+        elif score_diff == 2:
+            return 1.5
+        else:
+            return (11 + score_diff) / 8
 
 
 class PackerooScore():
