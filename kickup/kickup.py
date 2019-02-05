@@ -44,6 +44,12 @@ def hello():
     elif command == 'elo':
         leaderboard = elo.leaderboard()
         return api.elo_leaderboard_resp(leaderboard)
+    elif command == 'elogd100':
+        leaderboard = elo.leaderboard_gd100()
+        return api.elo_leaderboard_resp(leaderboard)
+    elif command == 'elogd400':
+        leaderboard = elo.leaderboard_gd400()
+        return api.elo_leaderboard_resp(leaderboard)
     else:
         return api.error_response(f'Invalid command: "{ command }"')
 
