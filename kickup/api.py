@@ -120,8 +120,8 @@ def emoji_score(kickup):
         5: EmojiWinConfig('KNOCKOUT', ':punch:', ':face_with_head_bandage:'),
         4: EmojiWinConfig('MERCY', ':muscle:', ':dizzy:'),
         3: EmojiWinConfig('DOMINATED', ':stuck_out_tongue_closed_eyes:', ':astonished:'),
-        2: EmojiWinConfig('NICE GAME', ':star_struck:', ':unamused:'),
-        1: EmojiWinConfig('NICE GAME', ':star_struck:', ':unamused:'),
+        2: EmojiWinConfig('NICE GAME', ':star-struck:', ':unamused:'),
+        1: EmojiWinConfig('NICE GAME', ':star-struck:', ':unamused:'),
     }[abs(kickup.score_blue - kickup.score_red)]
 
     red_won = kickup.score_red > kickup.score_blue
