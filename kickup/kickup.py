@@ -32,6 +32,7 @@ app = Flask(__name__)
 @app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
     if not 'text' in request.form or request.form['text'] == "":
+        logging.debug(f'Received invalid command')
         return api.error_response('Invalid command')
     command, _, args = request.form['text'].strip().partition(' ')
     if command == 'new':
