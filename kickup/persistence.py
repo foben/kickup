@@ -7,11 +7,10 @@ from dataclasses import dataclass
 from bson import ObjectId
 from flask import g
 
-@dataclass
+@dataclass(frozen=True)
 class Player:
     name: str
     slack_id: str
-    pack_id: str
     _id: ObjectId = None
 
 @dataclass
@@ -37,12 +36,16 @@ def player_by_id(obj_id):
     player = mongo().players.find_one({ '_id': obj_id })
     if not player:
         return None
+    if 'pack_id' in player:
+        del(player['pack_id'])
     return Player(**player)
 
 def player_by_slack_id(slack_id):
     player = mongo().players.find_one({ 'slack_id': slack_id })
     if not player:
         return None
+    if 'pack_id' in player:
+        del(player['pack_id'])
     return Player(**player)
 
 def save_kickup_match(kickup):
