@@ -51,10 +51,10 @@ def player_by_slack_id(slack_id):
 def save_kickup_match(kickup):
     try:
         match = {
-            'red_goal': player_by_slack_id(kickup.pairing.red_goal)._id,
-            'red_strike': player_by_slack_id(kickup.pairing.red_strike)._id,
-            'blue_goal': player_by_slack_id(kickup.pairing.blue_goal)._id,
-            'blue_strike': player_by_slack_id(kickup.pairing.blue_strike)._id,
+            'red_goal': kickup.pairing.red_goal._id,
+            'red_strike': kickup.pairing.red_strike._id,
+            'blue_goal': kickup.pairing.blue_goal._id,
+            'blue_strike': kickup.pairing.blue_strike._id,
             'score_red': kickup.score_red,
             'score_blue': kickup.score_blue,
             'date': datetime.datetime.utcnow(),

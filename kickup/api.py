@@ -63,7 +63,7 @@ def att_players(kickup):
 def pairing(kickup):
     return [
     {
-        "text": f":goal_net:<@{ kickup.pairing.red_goal }>\n:athletic_shoe:<@{ kickup.pairing.red_strike }>",
+        "text": f":goal_net:<@{ kickup.pairing.red_goal.slack_id }>\n:athletic_shoe:<@{ kickup.pairing.red_strike.slack_id }>",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#FF0000",
@@ -77,7 +77,7 @@ def pairing(kickup):
         "attachment_type": "default",
     },
     {
-        "text": f":athletic_shoe:<@{ kickup.pairing.blue_strike }>\n:goal_net:<@{ kickup.pairing.blue_goal }>",
+        "text": f":athletic_shoe:<@{ kickup.pairing.blue_strike.slack_id }>\n:goal_net:<@{ kickup.pairing.blue_goal.slack_id }>",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#0000FF",
@@ -86,7 +86,7 @@ def pairing(kickup):
     ]
 
 def candidate_list(kickup):
-    player_list = '\n'.join([f'<@{ p }>' for p in kickup.players])
+    player_list = '\n'.join([f'{ p.name }' for p in kickup.players])
     return [{
         "text": f"Current players:\n{ player_list }",
         "fallback": "Can't display this here :(",

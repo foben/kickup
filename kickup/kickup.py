@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, g
 import threading
 import state as st
 import api
@@ -6,7 +6,6 @@ import json
 import elo
 import persistence
 import delayed
-import pprint
 from logging.config import dictConfig
 import logging
 
@@ -53,7 +52,9 @@ def hello():
 @app.route("/api/interactive", methods=['GET', 'POST'])
 def interactive():
     payload = json.loads(request.form['payload'])
-    #pprint.pprint(payload)
+    user_slack_id = payload['user']['id']
+    g.requesting_player = persistence.player_by_slack_id(user_slack_id)
+
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
     if not kickup:
@@ -89,15 +90,15 @@ def handle_select(kickup, action):
 def handle_button(payload, kickup, action):
     button_cmd = action['value']
     if button_cmd == 'join':
-        user_slack_id = payload['user']['id']
-        if not persistence.player_by_slack_id(user_slack_id):
+        if not g.requesting_player:
+            logging.info('asdf')
             raise KickupException(f'Could not find registered player with your Slack ID!')
-        kickup.add_player(user_slack_id)
+        kickup.add_player(g.requesting_player)
     elif button_cmd == 'dummyadd':
-        kickup.add_player('UD12PG33M') #marv
-        kickup.add_player('UD276006T') #ansg
-        kickup.add_player('UCYCRPM37') #neiser
-        kickup.add_player('UFL1ME8S1') #max
+        kickup.add_player(persistence.player_by_slack_id('UD12PG33M')) #marv
+        kickup.add_player(persistence.player_by_slack_id('UD276006T')) #ansg
+        kickup.add_player(persistence.player_by_slack_id('UCYCRPM37')) #neiser
+        kickup.add_player(persistence.player_by_slack_id('UFL1ME8S1')) #max
     elif button_cmd == 'cancel':
         kickup.cancel()
     elif button_cmd == 'start':

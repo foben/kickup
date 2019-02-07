@@ -1,16 +1,17 @@
-from dataclasses import dataclass
 import random
 import logging
+from dataclasses import dataclass
+from persistence import Player
 
 KICKUPS = {}
 
 @dataclass
 class Pairing():
-    red_goal: str
-    red_strike: str
+    red_goal: Player
+    red_strike: Player
 
-    blue_goal: str
-    blue_strike: str
+    blue_goal: Player
+    blue_strike: Player
 
 OPEN = 'open'
 RUNNING = 'running'
@@ -40,13 +41,13 @@ class KickUp():
         self.score_blue = 0
         self.score_red = 0
 
-    def add_player(self, player_id):
-        if player_id in self.players:
-            logging.info(f'Player "{ player_id }" is already part of kickup { self.num }')
+    def add_player(self, player):
+        if player in self.players:
+            logging.info(f'Already in kickup {self.num}: { player }')
             return False
         else:
-            logging.info(f'Player "{ player_id }" joined kickup { self.num }')
-            self.players.add(player_id)
+            logging.info(f'Player joined kickup {self.num}: { player }')
+            self.players.add(player)
             return True
 
     def start_match(self):
@@ -80,5 +81,4 @@ class KickUp():
 
     def cancel(self):
         self.state = CANCELLED
-
 
