@@ -262,13 +262,6 @@ def att_buttons(kickup):
     else:
         return []
 
-def leaderboard_resp(leaderboard):
-    lb_text = '\n'.join([f'{x["position"]}. <@{x["slack_id"]}>   {x["points"]}' for x in leaderboard])
-    return jsonify( {
-            'response_type': 'in_channel',
-            'text': lb_text,
-    })
-
 def elo_leaderboard_resp(leaderboard):
     e = ""
     pad_pos = 2

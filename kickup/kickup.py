@@ -3,7 +3,6 @@ import threading
 import state as st
 import api
 import json
-import pack
 import elo
 import persistence
 import delayed
@@ -39,9 +38,6 @@ def hello():
         new_kickup = st.new_kickup()
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
         return api.respond(new_kickup)
-    elif command == 'leaderboard':
-        leaderboard = pack.packeroo_leaderboard()
-        return api.leaderboard_resp(leaderboard)
     elif command == 'elo':
         leaderboard = elo.leaderboard()
         return api.elo_leaderboard_resp(leaderboard)
@@ -110,14 +106,6 @@ def handle_button(payload, kickup, action):
         if kickup.resolve_match():
             logging.info(f'Kickup { kickup.num } resolved, persisting to DB')
             persistence.save_kickup_match(kickup)
-            def pack_async(kickup):
-                import time
-                time.sleep(3)
-                logging.info(f'Start match entry for kickup { kickup.num }')
-                pack.packeroo_match(kickup)
-            thread = threading.Thread(target=pack_async, kwargs={'kickup': kickup})
-            thread.start()
-            logging.info(f'Started thread for packeroo entry of Kickup { kickup.num }')
 
 class KickupException(Exception):
     pass

@@ -126,30 +126,3 @@ class EloGoalDiffScore():
             return 1.5
         else:
             return (11 + score_diff) / 8
-
-
-class PackerooScore():
-    def __init__(self):
-        pass
-
-    def initial_score(self):
-        return 0
-
-    def delta_score(self, inputs, score_red, score_blue):
-        win_score = 3
-        loose_score = -2
-        diff = abs(score_red - score_blue)
-        if diff > 5:
-            win_score = 5
-            loose_score = -4
-        elif diff > 3:
-            win_score = 4
-            loose_score = -3
-        blue_score = win_score if score_red < score_blue else loose_score
-        red_score = loose_score if score_red < score_blue else win_score
-        return {
-                inputs['red_goal']['id']: red_score,
-                inputs['red_strike']['id']: red_score,
-                inputs['blue_goal']['id']: blue_score,
-                inputs['blue_strike']['id']: blue_score,
-        }
