@@ -40,12 +40,6 @@ def hello():
     elif command == 'elo':
         leaderboard = elo.leaderboard()
         return api.elo_leaderboard_resp(leaderboard)
-    elif command == 'elogd100':
-        leaderboard = elo.leaderboard_gd100()
-        return api.elo_leaderboard_resp(leaderboard)
-    elif command == 'elogd400':
-        leaderboard = elo.leaderboard_gd400()
-        return api.elo_leaderboard_resp(leaderboard)
     else:
         return api.error_response(f'Invalid command: "{ command }"')
 
@@ -53,7 +47,7 @@ def hello():
 def interactive():
     payload = json.loads(request.form['payload'])
     user_slack_id = payload['user']['id']
-    g.requesting_player = persistence.player_by_slack_id(user_slack_id)
+    g.context_player = set_context_player(user_slack_id)
 
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
@@ -90,10 +84,7 @@ def handle_select(kickup, action):
 def handle_button(payload, kickup, action):
     button_cmd = action['value']
     if button_cmd == 'join':
-        if not g.requesting_player:
-            logging.info('asdf')
-            raise KickupException(f'Could not find registered player with your Slack ID!')
-        kickup.add_player(g.requesting_player)
+        kickup.add_player(g.context_player())
     elif button_cmd == 'dummyadd':
         kickup.add_player(persistence.player_by_slack_id('UD12PG33M')) #marv
         kickup.add_player(persistence.player_by_slack_id('UD276006T')) #ansg
@@ -107,6 +98,14 @@ def handle_button(payload, kickup, action):
         if kickup.resolve_match():
             logging.info(f'Kickup { kickup.num } resolved, persisting to DB')
             persistence.save_kickup_match(kickup)
+
+def set_context_player(user_slack_id):
+    player = persistence.player_by_slack_id(user_slack_id)
+    def context_player():
+        if not player:
+            raise KickupException(f'Could not find registered player with your Slack ID!')
+        return player
+    return context_player
 
 class KickupException(Exception):
     pass

@@ -2,7 +2,7 @@ import persistence
 from collections import defaultdict
 
 def leaderboard():
-    scoring = EloScore(K=30, F=100, initial=1000)
+    scoring = EloGoalDiffScore(K=30, F=400, initial=1000)
     return calculate_for_all(scoring)
 
 def calculate_for_all(scoring):
@@ -77,16 +77,6 @@ class EloScore():
                 inputs['blue_goal']['id']: adj_blue,
                 inputs['blue_strike']['id']: adj_blue,
         }
-
-
-def leaderboard_gd100():
-    scoring = EloGoalDiffScore(K=30, F=100, initial=1000)
-    return calculate_for_all(scoring)
-
-
-def leaderboard_gd400():
-    scoring = EloGoalDiffScore(K=30, F=400, initial=1000)
-    return calculate_for_all(scoring)
 
 #Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
 class EloGoalDiffScore():
