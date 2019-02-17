@@ -207,23 +207,18 @@ def att_buttons(kickup):
         return []
 
 def elo_leaderboard_resp(leaderboard):
-    e = ""
-    pad_pos = 2
-    pad_name = 25
-    pad_games = 4
-    pad_score = 5
-    lines = [
-            f'{e:{pad_pos}}  {"Name":<{pad_name}} {"Matches":<{pad_games}}     {"Score":<{pad_score}}',
-            "-" * 47,
-    ]
+    c1 = 3
+    c2 = 15
+    c3 = 2
+    c4 = 5
+    lines = []
 
-    for pos, entry in enumerate(leaderboard['board']):
-        col_pos = f'{pos+1:{pad_pos}}.'
-        col_name = f'{entry["name"][0:25]:{pad_name}}'
-        col_games = f'{entry["matchcount"]:{pad_games}}'
-        score = int(entry["score"])
-        col_points = f'{int(entry["score"]):{pad_score}}'
-        lines.append(f'{col_pos} {col_name} {col_games}        {col_points}')
+    for p, e in enumerate(leaderboard['board']):
+        pos = str(p + 1) + '.'
+        name = e["name"][:c2]
+        matchcount = e["matchcount"]
+        score = int(e["score"])
+        lines.append(f'{pos:>{c1}} {name:<{c2}} {matchcount:>{c3}}   {score:>{c4}}')
     lb_text = "\n".join(lines)
 
     last = list(filter(lambda e: e is not None, leaderboard['last']))
