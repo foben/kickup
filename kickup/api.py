@@ -141,7 +141,8 @@ def att_buttons(kickup):
             "name": "kickup",
             "text": ":arrow_down: Join",
             "type": "button",
-            "value": "join"
+            "value": "join",
+            "style": "primary",
             },
             {
             "name": "kickup",
@@ -153,7 +154,8 @@ def att_buttons(kickup):
             "name": "kickup",
             "text": ":no_entry_sign: Cancel",
             "type": "button",
-            "value": "cancel"
+            "value": "cancel",
+            "style": "danger",
             },
             {
             "name": "kickup",
@@ -172,36 +174,7 @@ def att_buttons(kickup):
                 "name": "score_red",
                 "text": "Score Red",
                 "type": "select",
-                "options": [
-                    {
-                    "text": "0",
-                    "value": "0"
-                    },
-                    {
-                    "text": "1",
-                    "value": "1"
-                    },
-                    {
-                    "text": "2",
-                    "value": "2"
-                    },
-                    {
-                    "text": "3",
-                    "value": "3"
-                    },
-                    {
-                    "text": "4",
-                    "value": "4"
-                    },
-                    {
-                    "text": "5",
-                    "value": "5"
-                    },
-                    {
-                    "text": "6",
-                    "value": "6"
-                    },
-                ],
+                "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
                 "selected_options": [ {
                     "text": str(kickup.score_red),
                     "value": str(kickup.score_red),
@@ -211,36 +184,7 @@ def att_buttons(kickup):
                 "name": "score_blue",
                 "text": "Score Blue",
                 "type": "select",
-                "options": [
-                    {
-                    "text": "0",
-                    "value": "0"
-                    },
-                    {
-                    "text": "1",
-                    "value": "1"
-                    },
-                    {
-                    "text": "2",
-                    "value": "2"
-                    },
-                    {
-                    "text": "3",
-                    "value": "3"
-                    },
-                    {
-                    "text": "4",
-                    "value": "4"
-                    },
-                    {
-                    "text": "5",
-                    "value": "5"
-                    },
-                    {
-                    "text": "6",
-                    "value": "6"
-                    },
-                ],
+                "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
                 "selected_options": [ {
                     "text": str(kickup.score_blue),
                     "value": str(kickup.score_blue),
