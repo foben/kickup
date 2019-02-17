@@ -7,7 +7,8 @@ def leaderboard():
 
 def calculate_for_all(scoring):
     player_points = defaultdict(lambda: {'score': scoring.initial_score(), 'count': 0})
-    for match in persistence.matches_sorted():
+    matches = persistence.matches_sorted()
+    for match in matches:
         inputs = {
                 'red_goal': {
                     'id': match.red_goal,
