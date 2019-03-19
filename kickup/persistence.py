@@ -69,9 +69,4 @@ def save_kickup_match(kickup):
 def matches_sorted():
     matches = [Match(**match) for match in mongo().matches.find()]
     sorted_matches = sorted(matches, key=lambda m: m.date)
-    count = len(sorted_matches)
-    if count < 101:
-        return sorted_matches
-    else:
-        return sorted_matches[count-100:]
-
+    return sorted_matches
