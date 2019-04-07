@@ -34,7 +34,10 @@ def hello():
         return api.error_response('Invalid command')
     command, _, args = request.form['text'].strip().partition(' ')
     if command == 'new':
+        g.context_player = get_player_from_request()
+
         new_kickup = st.new_kickup()
+        new_kickup.add_player(g.context_player())
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
         return api.respond(new_kickup)
     elif command == 'elo':
@@ -45,9 +48,7 @@ def hello():
 
 @app.route("/api/interactive", methods=['GET', 'POST'])
 def interactive():
-    payload = json.loads(request.form['payload'])
-    user_slack_id = payload['user']['id']
-    g.context_player = set_context_player(user_slack_id)
+    g.context_player = get_player_from_request(user_slack_id)
 
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
@@ -99,7 +100,9 @@ def handle_button(payload, kickup, action):
             logging.info(f'Kickup { kickup.num } resolved, persisting to DB')
             persistence.save_kickup_match(kickup)
 
-def set_context_player(user_slack_id):
+def get_player_from_request():
+    payload = json.loads(request.form['payload'])
+    user_slack_id = payload['user']['id']
     player = persistence.player_by_slack_id(user_slack_id)
     def context_player():
         if not player:
