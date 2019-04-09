@@ -208,17 +208,19 @@ def att_buttons(kickup):
 
 def elo_leaderboard_resp(leaderboard):
     c1 = 3
-    c2 = 15
-    c3 = 2
+    c2 = 13
+    c3 = 5
     c4 = 5
     lines = []
+
+    max_count = (max(map(lambda e: int(e["matchcount"]), leaderboard['board'])))
 
     for p, e in enumerate(leaderboard['board']):
         pos = str(p + 1) + '.'
         name = e["name"][:c2]
-        matchcount = e["matchcount"]
+        matchcount = '|' * (int(e["matchcount"] / max_count / 0.20001) + 1)
         score = int(e["score"])
-        lines.append(f'{pos:>{c1}} {name:<{c2}} {matchcount:>{c3}}   {score:>{c4}}')
+        lines.append(f'{pos:>{c1}} {name:<{c2}} {matchcount:<{c3}} {score:>{c4}}')
     lb_text = "\n".join(lines)
 
     last = list(filter(lambda e: e is not None, leaderboard['last']))
