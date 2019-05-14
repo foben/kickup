@@ -32,7 +32,7 @@ def hello():
     if not 'text' in request.form or request.form['text'] == "":
         logging.debug(f'Received invalid command')
         return api.error_response('Invalid command')
-    command, _, args = request.form['text'].strip().partition(' ')
+    command, _, _ = request.form['text'].strip().partition(' ')
     if command == 'new':
         new_kickup = st.new_kickup()
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
