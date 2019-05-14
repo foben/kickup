@@ -54,6 +54,9 @@ class KickUp():
         if len(self.players) < 4:
             self.warnings.add('Need at least 4 players to start!')
             return
+        if self.state == RUNNING:
+            logging.info('already started')
+            return
         logging.info(f'Kickup Match { self.num } has been started')
         self.pairing = Pairing(*random.sample(self.players, 4))
         self.state = RUNNING
