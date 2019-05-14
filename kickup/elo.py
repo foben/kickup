@@ -52,33 +52,6 @@ def last_result(delta):
     res.sort(key=lambda p: p[1], reverse=True)
     return res
 
-
-class EloScore():
-
-    def __init__(self, K, F, initial):
-        self.K = K
-        self.F = F
-        self. initial = initial
-
-    def initial_score(self):
-        return self.initial
-
-    def delta_score(self, inputs, score_red, score_blue):
-        fac_red = 0 if score_red < score_blue else 1
-        fac_blue = 0 if score_blue < score_red else 1
-        ts_red = (inputs['red_goal']['points'] + inputs['red_strike']['points']) / 2
-        ts_blue = (inputs['blue_goal']['points'] + inputs['blue_strike']['points']) / 2
-        prob_red = 1 / (10**((ts_blue - ts_red)/self.F) + 1)
-        prob_blue = 1 / (10**((ts_red - ts_blue)/self.F) + 1)
-        adj_red = self.K * (fac_red - prob_red)
-        adj_blue = self.K * (fac_blue - prob_blue)
-        return {
-                inputs['red_goal']['id']: adj_red,
-                inputs['red_strike']['id']: adj_red,
-                inputs['blue_goal']['id']: adj_blue,
-                inputs['blue_strike']['id']: adj_blue,
-        }
-
 #Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
 class EloGoalDiffScore():
 
