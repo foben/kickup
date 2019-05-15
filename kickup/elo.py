@@ -62,8 +62,8 @@ class EloGoalDiffScore():
 
         return delta_score_A, delta_score_B
 
-    def goal_diff_coefficient(self, goals_red, goals_blue):
-        score_diff = abs(goals_red - goals_blue)
+    def goal_diff_coefficient(self, goals_A, goals_B):
+        score_diff = abs(goals_A - goals_B)
         if score_diff == 0 or score_diff == 1:
             return 1
         elif score_diff == 2:
