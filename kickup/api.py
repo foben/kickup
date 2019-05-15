@@ -228,8 +228,8 @@ def elo_leaderboard_resp(leaderboard):
     pos_names = ", ".join([p.name for p in persistence.players_by_ids(leaderboard.last_match.winners())])
     neg_names = ", ".join([p.name for p in persistence.players_by_ids(leaderboard.last_match.losers())])
 
-    pos_line = f'↗️  {pos_names:40} +{leaderboard.last_delta}'
-    neg_line = f'↘️  {neg_names:40} -{leaderboard.last_delta}'
+    pos_line = f'↗️  {pos_names:40} +{int(leaderboard.last_delta)}'
+    neg_line = f'↘️  {neg_names:40} -{int(leaderboard.last_delta)}'
 
     res_text = f'*Elo Scores:*```\n{lb_text}```\n\n*Last Result:*\n```{pos_line}\n{neg_line}```'
 
