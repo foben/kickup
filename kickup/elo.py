@@ -25,6 +25,7 @@ class Leaderboard():
 
         self.last_match = match
         self.last_delta = abs(delta_A)
+        return self
 
     def ordered(self):
         point_list = [{'id': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items() ]

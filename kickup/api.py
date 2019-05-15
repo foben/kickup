@@ -55,29 +55,30 @@ def att_players(kickup):
     if kickup.state == st.OPEN:
         return candidate_list(kickup)
     elif kickup.state == st.RUNNING or kickup.state == st.RESOLVED:
-        return pairing(kickup)
+        return pairing(kickup, estimates=kickup.state == st.RUNNING)
     else:
         return []
 
 
-def pairing(kickup):
+def pairing(kickup, estimates=False):
+    est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
+    est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
     return [
     {
-        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "color": "#FF0000",
-        "attachment_type": "default",
-    },
-    {
-        "text": f"   VS  ",
+        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>{est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>{est_A}",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#000000",
         "attachment_type": "default",
     },
     {
-        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>",
+        "text": f"   VS  ",
+        "fallback": "Can't display this here :(",
+        "callback_id": f"{ kickup.num }",
+        "attachment_type": "default",
+    },
+    {
+        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>{est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>{est_B}",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#0000FF",

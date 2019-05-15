@@ -1,7 +1,11 @@
 import random
 import logging
+import elo
+import datetime
+import copy
 from dataclasses import dataclass
 from persistence import Player
+import persistence
 
 KICKUPS = {}
 
@@ -60,6 +64,22 @@ class KickUp():
         logging.info(f'Kickup Match { self.num } has been started')
         self.pairing = Pairing(*random.sample(self.players, 4))
         self.state = RUNNING
+        self.possible_scores()
+
+    def possible_scores(self):
+        match_win_A = persistence.Match(
+            self.pairing.goal_A._id,
+            self.pairing.strike_A._id,
+            self.pairing.goal_B._id,
+            self.pairing.strike_B._id,
+            6, 0,
+            datetime.datetime.now(),
+        )
+        match_win_B = copy.deepcopy(match_win_A)
+        match_win_B.score_A = 0
+        match_win_B.score_B = 6
+        self.max_win_A = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_A).last_delta
+        self.max_win_B = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_B).last_delta
 
     def resolve_match(self):
         if self.state == RESOLVED:

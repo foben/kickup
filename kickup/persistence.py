@@ -83,6 +83,8 @@ def save_kickup_match(kickup):
 
 
 def matches_sorted():
+    logging.debug('retrieving all matches from database')
     matches = [Match(**match) for match in mongo().matches.find()]
     sorted_matches = sorted(matches, key=lambda m: m.date)
+    logging.debug(f'retrieved {len(sorted_matches)} matches from database')
     return sorted_matches
