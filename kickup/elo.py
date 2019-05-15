@@ -9,19 +9,19 @@ class Leaderboard():
         self.last_delta = 0
 
     def eval_match(self, match):
-        elo_A = (self.player_points[match.red_goal]['elo'] + self.player_points[match.red_strike]['elo']) / 2
-        elo_B = (self.player_points[match.blue_goal]['elo'] + self.player_points[match.blue_strike]['elo']) / 2
+        elo_A = (self.player_points[match.goal_A]['elo'] + self.player_points[match.strike_A]['elo']) / 2
+        elo_B = (self.player_points[match.goal_B]['elo'] + self.player_points[match.strike_B]['elo']) / 2
 
-        delta_A, delta_B = self.elo_system.delta_score(elo_A, match.score_red, elo_B, match.score_blue)
-        self.player_points[match.red_goal]['elo']    += delta_A
-        self.player_points[match.red_strike]['elo']  += delta_A
-        self.player_points[match.blue_goal]['elo']   += delta_B
-        self.player_points[match.blue_strike]['elo'] += delta_B
+        delta_A, delta_B = self.elo_system.delta_score(elo_A, match.score_A, elo_B, match.score_B)
+        self.player_points[match.goal_A]['elo']    += delta_A
+        self.player_points[match.strike_A]['elo']  += delta_A
+        self.player_points[match.goal_B]['elo']   += delta_B
+        self.player_points[match.strike_B]['elo'] += delta_B
 
-        self.player_points[match.red_goal]['matches']    += 1
-        self.player_points[match.red_strike]['matches']  += 1
-        self.player_points[match.blue_goal]['matches']   += 1
-        self.player_points[match.blue_strike]['matches'] += 1
+        self.player_points[match.goal_A]['matches']    += 1
+        self.player_points[match.strike_A]['matches']  += 1
+        self.player_points[match.goal_B]['matches']   += 1
+        self.player_points[match.strike_B]['matches'] += 1
 
         self.last_match = match
         self.last_delta = abs(delta_A)

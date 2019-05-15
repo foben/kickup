@@ -15,26 +15,26 @@ class Player:
 
 @dataclass
 class Match:
-    red_goal: ObjectId
-    red_strike: ObjectId
-    blue_goal: ObjectId
-    blue_strike: ObjectId
-    score_red: int
-    score_blue: int
+    goal_A: ObjectId
+    strike_A: ObjectId
+    goal_B: ObjectId
+    strike_B: ObjectId
+    score_A: int
+    score_B: int
     date: datetime.datetime
     _id: ObjectId = None
 
     def winners(self):
-        if self.score_blue < self.score_red:
-            return [self.red_goal, self.red_strike]
+        if self.score_B < self.score_A:
+            return [self.goal_A, self.strike_A]
         else:
-            return [self.blue_goal, self.blue_strike]
+            return [self.goal_B, self.strike_B]
 
     def losers(self):
-        if self.score_blue < self.score_red:
-            return [self.blue_goal, self.blue_strike]
+        if self.score_B < self.score_A:
+            return [self.goal_B, self.strike_B]
         else:
-            return [self.red_goal, self.red_strike]
+            return [self.goal_A, self.strike_A]
 
 
 def mongo():
@@ -67,12 +67,12 @@ def player_by_slack_id(slack_id):
 def save_kickup_match(kickup):
     try:
         match = {
-            'red_goal': kickup.pairing.red_goal._id,
-            'red_strike': kickup.pairing.red_strike._id,
-            'blue_goal': kickup.pairing.blue_goal._id,
-            'blue_strike': kickup.pairing.blue_strike._id,
-            'score_red': kickup.score_red,
-            'score_blue': kickup.score_blue,
+            'goal_A': kickup.pairing.goal_A._id,
+            'strike_A': kickup.pairing.strike_A._id,
+            'goal_B': kickup.pairing.goal_B._id,
+            'strike_B': kickup.pairing.strike_B._id,
+            'score_A': kickup.score_A,
+            'score_B': kickup.score_B,
             'date': datetime.datetime.utcnow(),
         }
         mongo().matches.insert_one(match)

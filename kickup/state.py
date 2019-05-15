@@ -7,11 +7,11 @@ KICKUPS = {}
 
 @dataclass
 class Pairing():
-    red_goal: Player
-    red_strike: Player
+    goal_A: Player
+    strike_A: Player
 
-    blue_goal: Player
-    blue_strike: Player
+    goal_B: Player
+    strike_B: Player
 
 OPEN = 'open'
 RUNNING = 'running'
@@ -38,8 +38,8 @@ class KickUp():
         self.players = set()
         self.pairing = None
         self.warnings = set()
-        self.score_blue = 0
-        self.score_red = 0
+        self.score_B = 0
+        self.score_A = 0
 
     def add_player(self, player):
         if player in self.players:
@@ -65,13 +65,13 @@ class KickUp():
         if self.state == RESOLVED:
             logging.warning(f'Kickup { self.num } was resolved before!')
             return False
-        if self.score_blue != 6 and self.score_red != 6:
+        if self.score_B != 6 and self.score_A != 6:
             self.warnings.add('At least one team needs 6 goals!')
             return False
-        if self.score_blue == 6 and self.score_red == 6:
+        if self.score_B == 6 and self.score_A == 6:
             self.warnings.add('Both teams can\'t have score 6!')
             return False
-        logging.info(f'Kickup { self.num } has been resolved RED { self.score_red }:{ self.score_blue } BLUE')
+        logging.info(f'Kickup { self.num } has been resolved A { self.score_A }:{ self.score_B } B')
         self.state = RESOLVED
         return True
 

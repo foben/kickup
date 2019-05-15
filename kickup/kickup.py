@@ -69,17 +69,17 @@ def interactive():
 
 def handle_select(kickup, action):
     action_name = action['name']
-    if action_name not in ('score_red', 'score_blue'):
+    if action_name not in ('score_A', 'score_B'):
         logging.warning(f'Received unknown select action "{ action_name }"')
         return
 
     new_score = int(action['selected_options'][0]['value'])
-    if action_name == 'score_red':
-        logging.info(f'New score for team red in kickup { kickup.num } is { new_score }')
-        kickup.score_red =  new_score
-    elif action_name == 'score_blue':
-        logging.info(f'New score for team blue in kickup { kickup.num } is { new_score }')
-        kickup.score_blue = new_score
+    if action_name == 'score_A':
+        logging.info(f'New score for team A in kickup { kickup.num } is { new_score }')
+        kickup.score_A =  new_score
+    elif action_name == 'score_B':
+        logging.info(f'New score for team B in kickup { kickup.num } is { new_score }')
+        kickup.score_B = new_score
 
 def handle_button(payload, kickup, action):
     button_cmd = action['value']

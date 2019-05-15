@@ -63,7 +63,7 @@ def att_players(kickup):
 def pairing(kickup):
     return [
     {
-        "text": f":goal_net:<@{ kickup.pairing.red_goal.slack_id }>\n:athletic_shoe:<@{ kickup.pairing.red_strike.slack_id }>",
+        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#FF0000",
@@ -77,7 +77,7 @@ def pairing(kickup):
         "attachment_type": "default",
     },
     {
-        "text": f":athletic_shoe:<@{ kickup.pairing.blue_strike.slack_id }>\n:goal_net:<@{ kickup.pairing.blue_goal.slack_id }>",
+        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#0000FF",
@@ -122,13 +122,13 @@ def emoji_score(kickup):
         3: EmojiWinConfig('DOMINATED', ':stuck_out_tongue_closed_eyes:', ':astonished:'),
         2: EmojiWinConfig('NICE GAME', ':star-struck:', ':unamused:'),
         1: EmojiWinConfig('NICE GAME', ':star-struck:', ':unamused:'),
-    }[abs(kickup.score_blue - kickup.score_red)]
+    }[abs(kickup.score_B - kickup.score_A)]
 
-    red_won = kickup.score_red > kickup.score_blue
-    red_emoji = emoji_config.winner_emoji if red_won else emoji_config.loser_emoji
-    blue_emoji = emoji_config.winner_emoji if not red_won else emoji_config.loser_emoji
+    A_won = kickup.score_A > kickup.score_B
+    A_emoji = emoji_config.winner_emoji if A_won else emoji_config.loser_emoji
+    B_emoji = emoji_config.winner_emoji if not A_won else emoji_config.loser_emoji
 
-    return f"*{ emoji_config.name }*: {red_emoji} { kickup.score_red }:{ kickup.score_blue } {blue_emoji}"
+    return f"*{ emoji_config.name }*: {A_emoji} { kickup.score_A }:{ kickup.score_B } {B_emoji}"
 
 
 def att_buttons(kickup):
@@ -171,23 +171,23 @@ def att_buttons(kickup):
             "fallback": "OMG",
             "actions": [
                 {
-                "name": "score_red",
-                "text": "Score Red",
+                "name": "score_A",
+                "text": "Score A",
                 "type": "select",
                 "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
                 "selected_options": [ {
-                    "text": str(kickup.score_red),
-                    "value": str(kickup.score_red),
+                    "text": str(kickup.score_A),
+                    "value": str(kickup.score_A),
                     }],
                 },
                 {
-                "name": "score_blue",
-                "text": "Score Blue",
+                "name": "score_B",
+                "text": "Score B",
                 "type": "select",
                 "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
                 "selected_options": [ {
-                    "text": str(kickup.score_blue),
-                    "value": str(kickup.score_blue),
+                    "text": str(kickup.score_B),
+                    "value": str(kickup.score_B),
                     }],
                 },
                 {
@@ -217,7 +217,6 @@ def elo_leaderboard_resp(leaderboard):
 
     for idx, entry in enumerate(leaderboard.ordered()):
         player = persistence.player_by_id(entry['id'])
-        print(player)
         pos = str(idx + 1) + '.'
         name = player.name[:c2]
         matchcount = '|' * (int(entry["matches"] / max_count / 0.20001) + 1)
