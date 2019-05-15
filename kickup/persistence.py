@@ -24,6 +24,19 @@ class Match:
     date: datetime.datetime
     _id: ObjectId = None
 
+    def winners(self):
+        if self.score_blue < self.score_red:
+            return [self.red_goal, self.red_strike]
+        else:
+            return [self.blue_goal, self.blue_strike]
+
+    def losers(self):
+        if self.score_blue < self.score_red:
+            return [self.blue_goal, self.blue_strike]
+        else:
+            return [self.red_goal, self.red_strike]
+
+
 def mongo():
     if 'mongo' not in g:
         logging.debug('Setting up new MongoDB client')
@@ -39,6 +52,9 @@ def player_by_id(obj_id):
     if 'pack_id' in player:
         del(player['pack_id'])
     return Player(**player)
+
+def players_by_ids(obj_ids):
+    return [player for player in [player_by_id(id) for id in obj_ids] if player]
 
 def player_by_slack_id(slack_id):
     player = mongo().players.find_one({ 'slack_id': slack_id })

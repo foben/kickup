@@ -1,56 +1,42 @@
 import persistence
 from collections import defaultdict
 
-def leaderboard():
+class Leaderboard():
+    def __init__(self, elo_system):
+        self.elo_system = elo_system
+        self.player_points = defaultdict(lambda: {'elo': self.elo_system.initial_score(), 'matches': 0})
+        self.last_match = None
+        self.last_delta = 0
+
+    def eval_match(self, match):
+        elo_A = (self.player_points[match.red_goal]['elo'] + self.player_points[match.red_strike]['elo']) / 2
+        elo_B = (self.player_points[match.blue_goal]['elo'] + self.player_points[match.blue_strike]['elo']) / 2
+
+        delta_A, delta_B = self.elo_system.delta_score(elo_A, match.score_red, elo_B, match.score_blue)
+        self.player_points[match.red_goal]['elo']    += delta_A
+        self.player_points[match.red_strike]['elo']  += delta_A
+        self.player_points[match.blue_goal]['elo']   += delta_B
+        self.player_points[match.blue_strike]['elo'] += delta_B
+
+        self.player_points[match.red_goal]['matches']    += 1
+        self.player_points[match.red_strike]['matches']  += 1
+        self.player_points[match.blue_goal]['matches']   += 1
+        self.player_points[match.blue_strike]['matches'] += 1
+
+        self.last_match = match
+        self.last_delta = abs(delta_A)
+
+    def ordered(self):
+        point_list = [{'id': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items() ]
+        return sorted(point_list, key=lambda e: e['elo'], reverse=True)
+
+
+def leaderboard(matches):
     scoring = EloGoalDiffScore(K=30, F=400, initial=1000)
-    return calculate_for_all(scoring)
-
-def calculate_for_all(scoring):
-    player_points = defaultdict(lambda: {'score': scoring.initial_score(), 'count': 0})
-    matches = persistence.matches_sorted()
+    leaderboard = Leaderboard(scoring)
     for match in matches:
-        inputs = {
-                'red_goal': {
-                    'id': match.red_goal,
-                    'points': player_points[match.red_goal]['score']
-                },
-                'red_strike': {
-                    'id': match.red_strike,
-                    'points': player_points[match.red_strike]['score']
-                },
-                'blue_goal': {
-                    'id': match.blue_goal,
-                    'points': player_points[match.blue_goal]['score']
-                },
-                'blue_strike': {
-                    'id': match.blue_strike,
-                    'points': player_points[match.blue_strike]['score']
-                },
-        }
-        deltas = scoring.delta_score(inputs, match.score_red, match.score_blue)
-        for _id, _delta in deltas.items():
-            player_points[_id]['score'] += _delta
-            player_points[_id]['count'] += 1
-    point_list = []
-    for player_id, player_aggregate in player_points.items():
-        player = persistence.player_by_id(player_id)
-        if not player:
-            continue
-        point_list.append( {
-            'name': player.name,
-            'score': player_aggregate['score'],
-            'matchcount': player_aggregate['count'],
-            })
-    point_list = sorted(point_list, key=lambda e: e['score'], reverse=True)
-    return {
-            'board': point_list,
-            'last': last_result(deltas),
-    }
-
-def last_result(delta):
-    res = [(persistence.player_by_id(p), int(d)) for p, d in delta.items()]
-    res.sort(key=lambda p: p[1], reverse=True)
-    return res
+        leaderboard.eval_match(match)
+    return leaderboard
 
 #Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
 class EloGoalDiffScore():
@@ -63,24 +49,18 @@ class EloGoalDiffScore():
     def initial_score(self):
         return self.initial
 
-    def delta_score(self, inputs, score_red, score_blue):
-        w_red = 0 if score_red < score_blue else 1
-        w_blue = 0 if score_blue < score_red else 1
+    def delta_score(self, elo_A, goals_A, elo_B, goals_B):
+        win_prob_A = 1 / (10**((elo_B - elo_A)/self.F) + 1)
+        win_prob_B = 1 / (10**((elo_A - elo_B)/self.F) + 1)
 
-        points_red = (inputs['red_goal']['points'] + inputs['red_strike']['points']) / 2
-        points_blue = (inputs['blue_goal']['points'] + inputs['blue_strike']['points']) / 2
-        we_red = 1 / (10**((points_blue - points_red)/self.F) + 1)
-        we_blue = 1 / (10**((points_red - points_blue)/self.F) + 1)
+        win_A = 0 if goals_A < goals_B else 1
+        win_B = 0 if goals_B < goals_A else 1
 
-        g = self.goal_diff_coefficient(score_red, score_blue)
-        p_red = self.K * g * (w_red - we_red)
-        p_blue = self.K * g * (w_blue - we_blue)
-        return {
-            inputs['red_goal']['id']: p_red,
-            inputs['red_strike']['id']: p_red,
-            inputs['blue_goal']['id']: p_blue,
-            inputs['blue_strike']['id']: p_blue,
-        }
+        goal_diff_coeff = self.goal_diff_coefficient(goals_A, goals_B)
+        delta_score_A = self.K * goal_diff_coeff * (win_A - win_prob_A)
+        delta_score_B = self.K * goal_diff_coeff * (win_B - win_prob_B)
+
+        return delta_score_A, delta_score_B
 
     def goal_diff_coefficient(self, goals_red, goals_blue):
         score_diff = abs(goals_red - goals_blue)

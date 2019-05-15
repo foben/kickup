@@ -38,7 +38,7 @@ def hello():
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
         return api.respond(new_kickup)
     elif command == 'elo':
-        leaderboard = elo.leaderboard()
+        leaderboard = elo.leaderboard(persistence.matches_sorted())
         return api.elo_leaderboard_resp(leaderboard)
     else:
         return api.error_response(f'Invalid command: "{ command }"')

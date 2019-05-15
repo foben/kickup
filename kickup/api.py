@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-
 from flask import jsonify
 import state as st
+import persistence
 
 def respond(kickup):
     if kickup is None:
@@ -213,24 +213,23 @@ def elo_leaderboard_resp(leaderboard):
     c4 = 5
     lines = []
 
-    max_count = (max(map(lambda e: int(e["matchcount"]), leaderboard['board'])))
+    max_count = (max(map(lambda entry: int(entry["matches"]), leaderboard.ordered())))
 
-    for p, e in enumerate(leaderboard['board']):
-        pos = str(p + 1) + '.'
-        name = e["name"][:c2]
-        matchcount = '|' * (int(e["matchcount"] / max_count / 0.20001) + 1)
-        score = int(e["score"])
+    for idx, entry in enumerate(leaderboard.ordered()):
+        player = persistence.player_by_id(entry['id'])
+        print(player)
+        pos = str(idx + 1) + '.'
+        name = player.name[:c2]
+        matchcount = '|' * (int(entry["matches"] / max_count / 0.20001) + 1)
+        score = int(entry["elo"])
         lines.append(f'{pos:>{c1}} {name:<{c2}} {matchcount:<{c3}} {score:>{c4}}')
     lb_text = "\n".join(lines)
 
-    last = list(filter(lambda e: e is not None, leaderboard['last']))
-    pos_score = next(filter(lambda s: s >= 0, map(lambda e: e[1], last)),0)
-    neg_score = next(filter(lambda s: s < 0, map(lambda e: e[1], last)),0)
-    pos_names = ", ".join([e[0].name for e in filter(lambda e: e[1] >=0, last)])[0:50]
-    neg_names = ", ".join([e[0].name for e in filter(lambda e: e[1] <0, last)])[0:50]
+    pos_names = ", ".join([p.name for p in persistence.players_by_ids(leaderboard.last_match.winners())])
+    neg_names = ", ".join([p.name for p in persistence.players_by_ids(leaderboard.last_match.losers())])
 
-    pos_line = f'↗️  {pos_names:40} +{pos_score}'
-    neg_line = f'↘️  {neg_names:40} -{abs(neg_score)}'
+    pos_line = f'↗️  {pos_names:40} +{leaderboard.last_delta}'
+    neg_line = f'↘️  {neg_names:40} -{leaderboard.last_delta}'
 
     res_text = f'*Elo Scores:*```\n{lb_text}```\n\n*Last Result:*\n```{pos_line}\n{neg_line}```'
 
