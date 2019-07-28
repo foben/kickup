@@ -1,17 +1,19 @@
-import os
 import datetime
 import logging
+import os
 import traceback
-from pymongo import MongoClient
 from dataclasses import dataclass
 from bson import ObjectId
 from flask import g
+from pymongo import MongoClient
+
 
 @dataclass(frozen=True)
 class Player:
     name: str
     slack_id: str
     _id: ObjectId = None
+
 
 @dataclass
 class Match:
@@ -41,28 +43,33 @@ def mongo():
     if 'mongo' not in g:
         logging.debug('Setting up new MongoDB client')
         mongo_pass = os.environ['MONGO_PASS']
-        g.mongo = MongoClient(host=f'mongodb://kickup:{ mongo_pass }@127.0.0.1/kickup', connectTimeoutMS=2000, serverSelectionTimeoutMS=3000)
+        g.mongo = MongoClient(host=f'mongodb://kickup:{mongo_pass}@127.0.0.1/kickup', connectTimeoutMS=2000,
+                              serverSelectionTimeoutMS=3000)
     # return kickup database
     return g.mongo.kickup
 
+
 def player_by_id(obj_id):
-    player = mongo().players.find_one({ '_id': obj_id })
+    player = mongo().players.find_one({'_id': obj_id})
     if not player:
         return None
     if 'pack_id' in player:
-        del(player['pack_id'])
+        del (player['pack_id'])
     return Player(**player)
+
 
 def players_by_ids(obj_ids):
     return [player for player in [player_by_id(id) for id in obj_ids] if player]
 
+
 def player_by_slack_id(slack_id):
-    player = mongo().players.find_one({ 'slack_id': slack_id })
+    player = mongo().players.find_one({'slack_id': slack_id})
     if not player:
         return None
     if 'pack_id' in player:
-        del(player['pack_id'])
+        del (player['pack_id'])
     return Player(**player)
+
 
 def save_kickup_match(kickup):
     try:

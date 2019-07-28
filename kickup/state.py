@@ -1,13 +1,14 @@
-import random
-import logging
-import elo
-import datetime
 import copy
+import datetime
+import logging
+import random
 from dataclasses import dataclass
-from persistence import Player
+import elo
 import persistence
+from persistence import Player
 
 KICKUPS = {}
+
 
 @dataclass
 class Pairing():
@@ -17,22 +18,26 @@ class Pairing():
     goal_B: Player
     strike_B: Player
 
+
 OPEN = 'open'
 RUNNING = 'running'
 RESOLVED = 'resolved'
 CANCELLED = 'cancelled'
 
+
 def new_kickup():
     while True:
-        num = random.randint(10000,1000000)
+        num = random.randint(10000, 1000000)
         if num not in KICKUPS: break
     KICKUPS[num] = KickUp(num)
     return KICKUPS[num]
+
 
 def get_kickup(num):
     if not num in KICKUPS:
         return None
     return KICKUPS[num]
+
 
 class KickUp():
 
@@ -47,10 +52,10 @@ class KickUp():
 
     def add_player(self, player):
         if player in self.players:
-            logging.info(f'Already in kickup {self.num}: { player }')
+            logging.info(f'Already in kickup {self.num}: {player}')
             return False
         else:
-            logging.info(f'Player joined kickup {self.num}: { player }')
+            logging.info(f'Player joined kickup {self.num}: {player}')
             self.players.add(player)
             return True
 
@@ -61,7 +66,7 @@ class KickUp():
         if self.state == RUNNING:
             logging.info('already started')
             return
-        logging.info(f'Kickup Match { self.num } has been started')
+        logging.info(f'Kickup Match {self.num} has been started')
         self.pairing = Pairing(*random.sample(self.players, 4))
         self.state = RUNNING
         self.possible_scores()
@@ -83,7 +88,7 @@ class KickUp():
 
     def resolve_match(self):
         if self.state == RESOLVED:
-            logging.warning(f'Kickup { self.num } was resolved before!')
+            logging.warning(f'Kickup {self.num} was resolved before!')
             return False
         if self.score_B != 6 and self.score_A != 6:
             self.warnings.add('At least one team needs 6 goals!')
@@ -91,7 +96,7 @@ class KickUp():
         if self.score_B == 6 and self.score_A == 6:
             self.warnings.add('Both teams can\'t have score 6!')
             return False
-        logging.info(f'Kickup { self.num } has been resolved A { self.score_A }:{ self.score_B } B')
+        logging.info(f'Kickup {self.num} has been resolved A {self.score_A}:{self.score_B} B')
         self.state = RESOLVED
         return True
 
@@ -104,4 +109,3 @@ class KickUp():
 
     def cancel(self):
         self.state = CANCELLED
-
