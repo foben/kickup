@@ -30,7 +30,7 @@ app = Flask(__name__)
 
 @app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
-    if not 'text' in request.form or request.form['text'] == "":
+    if 'text' not in request.form or request.form['text'] == "":
         logging.debug(f'Received invalid command')
         return api.error_response('Invalid command')
     command, _, _ = request.form['text'].strip().partition(' ')
@@ -62,7 +62,7 @@ def interactive():
         if action['type'] == 'select':
             handle_select(kickup, action)
         else:
-            handle_button(payload, kickup, action)
+            handle_button(kickup, action)
     except KickupException as ke:
         delayed.delayed_error(ke, payload['response_url'])
         logging.error(ke)
@@ -85,7 +85,7 @@ def handle_select(kickup, action):
         kickup.score_B = new_score
 
 
-def handle_button(payload, kickup, action):
+def handle_button(kickup, action):
     button_cmd = action['value']
     if button_cmd == 'join':
         kickup.add_player(g.context_player())

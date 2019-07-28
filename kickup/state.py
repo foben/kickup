@@ -11,12 +11,12 @@ KICKUPS = {}
 
 
 @dataclass
-class Pairing():
-    goal_A: Player
-    strike_A: Player
+class Pairing:
+    goal_a: Player
+    strike_a: Player
 
-    goal_B: Player
-    strike_B: Player
+    goal_b: Player
+    strike_b: Player
 
 
 OPEN = 'open'
@@ -28,18 +28,19 @@ CANCELLED = 'cancelled'
 def new_kickup():
     while True:
         num = random.randint(10000, 1000000)
-        if num not in KICKUPS: break
+        if num not in KICKUPS:
+            break
     KICKUPS[num] = KickUp(num)
     return KICKUPS[num]
 
 
 def get_kickup(num):
-    if not num in KICKUPS:
+    if num not in KICKUPS:
         return None
     return KICKUPS[num]
 
 
-class KickUp():
+class KickUp:
 
     def __init__(self, num):
         self.num = num
@@ -47,8 +48,10 @@ class KickUp():
         self.players = set()
         self.pairing = None
         self.warnings = set()
-        self.score_B = 0
-        self.score_A = 0
+        self.score_a = 0
+        self.score_b = 0
+        self.max_win_a = 0
+        self.max_win_b = 0
 
     def add_player(self, player):
         if player in self.players:
@@ -72,31 +75,31 @@ class KickUp():
         self.possible_scores()
 
     def possible_scores(self):
-        match_win_A = persistence.Match(
-            self.pairing.goal_A._id,
-            self.pairing.strike_A._id,
-            self.pairing.goal_B._id,
-            self.pairing.strike_B._id,
+        match_win_a = persistence.Match(
+            self.pairing.goal_a._id,
+            self.pairing.strike_a._id,
+            self.pairing.goal_b._id,
+            self.pairing.strike_b._id,
             6, 0,
             datetime.datetime.now(),
         )
-        match_win_B = copy.deepcopy(match_win_A)
-        match_win_B.score_A = 0
-        match_win_B.score_B = 6
-        self.max_win_A = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_A).last_delta
-        self.max_win_B = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_B).last_delta
+        match_win_b = copy.deepcopy(match_win_a)
+        match_win_b.score_a = 0
+        match_win_b.score_b = 6
+        self.max_win_a = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_a).last_delta
+        self.max_win_b = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_b).last_delta
 
     def resolve_match(self):
         if self.state == RESOLVED:
             logging.warning(f'Kickup {self.num} was resolved before!')
             return False
-        if self.score_B != 6 and self.score_A != 6:
+        if self.score_b != 6 and self.score_a != 6:
             self.warnings.add('At least one team needs 6 goals!')
             return False
-        if self.score_B == 6 and self.score_A == 6:
+        if self.score_b == 6 and self.score_a == 6:
             self.warnings.add('Both teams can\'t have score 6!')
             return False
-        logging.info(f'Kickup {self.num} has been resolved A {self.score_A}:{self.score_B} B')
+        logging.info(f'Kickup {self.num} has been resolved A {self.score_a}:{self.score_b} B')
         self.state = RESOLVED
         return True
 

@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 
-class Leaderboard():
+class Leaderboard:
     def __init__(self, elo_system):
         self.elo_system = elo_system
         self.player_points = defaultdict(lambda: {'elo': self.elo_system.initial_score(), 'matches': 0})
@@ -9,14 +9,14 @@ class Leaderboard():
         self.last_delta = 0
 
     def eval_match(self, match):
-        elo_A = (self.player_points[match.goal_A]['elo'] + self.player_points[match.strike_A]['elo']) / 2
-        elo_B = (self.player_points[match.goal_B]['elo'] + self.player_points[match.strike_B]['elo']) / 2
+        elo_a = (self.player_points[match.goal_A]['elo'] + self.player_points[match.strike_A]['elo']) / 2
+        elo_b = (self.player_points[match.goal_B]['elo'] + self.player_points[match.strike_B]['elo']) / 2
 
-        delta_A, delta_B = self.elo_system.delta_score(elo_A, match.score_A, elo_B, match.score_B)
-        self.player_points[match.goal_A]['elo'] += delta_A
-        self.player_points[match.strike_A]['elo'] += delta_A
-        self.player_points[match.goal_B]['elo'] += delta_B
-        self.player_points[match.strike_B]['elo'] += delta_B
+        delta_a, delta_b = self.elo_system.delta_score(elo_a, match.score_A, elo_b, match.score_B)
+        self.player_points[match.goal_A]['elo'] += delta_a
+        self.player_points[match.strike_A]['elo'] += delta_a
+        self.player_points[match.goal_B]['elo'] += delta_b
+        self.player_points[match.strike_B]['elo'] += delta_b
 
         self.player_points[match.goal_A]['matches'] += 1
         self.player_points[match.strike_A]['matches'] += 1
@@ -24,7 +24,7 @@ class Leaderboard():
         self.player_points[match.strike_B]['matches'] += 1
 
         self.last_match = match
-        self.last_delta = abs(delta_A)
+        self.last_delta = abs(delta_a)
         return self
 
     def ordered(self):
@@ -33,7 +33,7 @@ class Leaderboard():
 
 
 def leaderboard(matches):
-    scoring = EloGoalDiffScore(K=30, F=400, initial=1000)
+    scoring = EloGoalDiffScore(k=30, f=400, initial=1000)
     leaderboard = Leaderboard(scoring)
     for match in matches:
         leaderboard.eval_match(match)
@@ -41,31 +41,32 @@ def leaderboard(matches):
 
 
 # Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
-class EloGoalDiffScore():
+class EloGoalDiffScore:
 
-    def __init__(self, K, F, initial):
-        self.K = K
-        self.F = F
+    def __init__(self, k, f, initial):
+        self.k = k
+        self.f = f
         self.initial = initial
 
     def initial_score(self):
         return self.initial
 
-    def delta_score(self, elo_A, goals_A, elo_B, goals_B):
-        win_prob_A = 1 / (10 ** ((elo_B - elo_A) / self.F) + 1)
-        win_prob_B = 1 / (10 ** ((elo_A - elo_B) / self.F) + 1)
+    def delta_score(self, elo_a, goals_a, elo_b, goals_b):
+        win_prob_a = 1 / (10 ** ((elo_b - elo_a) / self.f) + 1)
+        win_prob_b = 1 / (10 ** ((elo_a - elo_b) / self.f) + 1)
 
-        win_A = 0 if goals_A < goals_B else 1
-        win_B = 0 if goals_B < goals_A else 1
+        win_a = 0 if goals_a < goals_b else 1
+        win_b = 0 if goals_b < goals_a else 1
 
-        goal_diff_coeff = self.goal_diff_coefficient(goals_A, goals_B)
-        delta_score_A = self.K * goal_diff_coeff * (win_A - win_prob_A)
-        delta_score_B = self.K * goal_diff_coeff * (win_B - win_prob_B)
+        goal_diff_coeff = self.goal_diff_coefficient(goals_a, goals_b)
+        delta_score_a = self.k * goal_diff_coeff * (win_a - win_prob_a)
+        delta_score_b = self.k * goal_diff_coeff * (win_b - win_prob_b)
 
-        return delta_score_A, delta_score_B
+        return delta_score_a, delta_score_b
 
-    def goal_diff_coefficient(self, goals_A, goals_B):
-        score_diff = abs(goals_A - goals_B)
+    @staticmethod
+    def goal_diff_coefficient(goals_a, goals_b):
+        score_diff = abs(goals_a - goals_b)
         if score_diff == 0 or score_diff == 1:
             return 1
         elif score_diff == 2:

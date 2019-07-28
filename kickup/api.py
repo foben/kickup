@@ -4,6 +4,7 @@ from flask import jsonify
 import persistence
 import state as st
 
+
 def respond(kickup):
     if kickup is None:
         return jsonify({
@@ -65,11 +66,11 @@ def att_players(kickup):
 
 
 def pairing(kickup, estimates=False):
-    est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
-    est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
+    est_a = f' (max +{int(kickup.max_win_A)})' if estimates else ''
+    est_b = f' (max +{int(kickup.max_win_B)})' if estimates else ''
     return [
         {
-            "text": f":goal_net:<@{kickup.pairing.goal_A.slack_id}>{est_A}\n:athletic_shoe:<@{kickup.pairing.strike_A.slack_id}>{est_A}",
+            "text": f":goal_net:<@{kickup.pairing.goal_A.slack_id}>{est_a}\n:athletic_shoe:<@{kickup.pairing.strike_A.slack_id}>{est_a}",
             "fallback": "Can't display this here :(",
             "callback_id": f"{kickup.num}",
             "color": "#000000",
@@ -82,7 +83,7 @@ def pairing(kickup, estimates=False):
             "attachment_type": "default",
         },
         {
-            "text": f":athletic_shoe:<@{kickup.pairing.strike_B.slack_id}>{est_B}\n:goal_net:<@{kickup.pairing.goal_B.slack_id}>{est_B}",
+            "text": f":athletic_shoe:<@{kickup.pairing.strike_B.slack_id}>{est_b}\n:goal_net:<@{kickup.pairing.goal_B.slack_id}>{est_b}",
             "fallback": "Can't display this here :(",
             "callback_id": f"{kickup.num}",
             "color": "#0000FF",
@@ -131,11 +132,11 @@ def emoji_score(kickup):
         1: EmojiWinConfig('NICE GAME', ':star-struck:', ':unamused:'),
     }[abs(kickup.score_B - kickup.score_A)]
 
-    A_won = kickup.score_A > kickup.score_B
-    A_emoji = emoji_config.winner_emoji if A_won else emoji_config.loser_emoji
-    B_emoji = emoji_config.winner_emoji if not A_won else emoji_config.loser_emoji
+    a_won = kickup.score_A > kickup.score_B
+    a_emoji = emoji_config.winner_emoji if a_won else emoji_config.loser_emoji
+    b_emoji = emoji_config.winner_emoji if not a_won else emoji_config.loser_emoji
 
-    return f"*{emoji_config.name}*: {A_emoji} {kickup.score_A}:{kickup.score_B} {B_emoji}"
+    return f"*{emoji_config.name}*: {a_emoji} {kickup.score_A}:{kickup.score_B} {b_emoji}"
 
 
 def att_buttons(kickup):
