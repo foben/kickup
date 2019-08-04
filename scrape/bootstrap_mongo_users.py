@@ -1,4 +1,5 @@
 import os
+
 from pymongo import MongoClient
 
 # List of players to add to mongo
@@ -21,13 +22,14 @@ player_list = [
 ]
 
 mongo_pw = os.environ['MONGO_PASS']
-client = MongoClient(host=f'mongodb://kickup:{ mongo_pw }@127.0.0.1/kickup', connectTimeoutMS=2000, serverSelectionTimeoutMS=3000)
+client = MongoClient(host=f'mongodb://kickup:{mongo_pw}@127.0.0.1/kickup', connectTimeoutMS=2000,
+                     serverSelectionTimeoutMS=3000)
 db = client.kickup
 player_col = db.players
 for player in player_list:
     existing = player_col.find_one({'slack_id': player['slack_id']})
     if existing:
-        print(f'Player { player["name"] } already in database!')
+        print(f'Player {player["name"]} already in database!')
         continue
     _id = player_col.insert_one(player).inserted_id
-    print(f'Player { player["name"] } was inserted with id { _id }')
+    print(f'Player {player["name"]} was inserted with id {_id}')

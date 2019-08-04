@@ -1,21 +1,24 @@
 from dataclasses import dataclass
+
 from flask import jsonify
-import state as st
 import persistence
+import state as st
+
 
 def respond(kickup):
     if kickup is None:
-        return jsonify( {
-                'response_type': 'in_channel',
-                'text': ':skull_and_crossbones: Sorry, this kickup is dead',
+        return jsonify({
+            'response_type': 'in_channel',
+            'text': ':skull_and_crossbones: Sorry, this kickup is dead',
         })
     if kickup.state == st.CANCELLED:
-        return jsonify( {
-                'response_type': 'in_channel',
-                'text': 'This pickup match was cancelled :crying_cat_face:',
+        return jsonify({
+            'response_type': 'in_channel',
+            'text': 'This pickup match was cancelled :crying_cat_face:',
         })
     else:
         return button_resp(kickup)
+
 
 def button_resp(kickup):
     if kickup.state == st.OPEN:
@@ -37,19 +40,21 @@ def button_resp(kickup):
                 *att_footer(kickup),
             ]
         }
-)
+    )
+
 
 def att_footer(kickup):
     warnings = kickup.process_warnings()
     if not warnings:
         return []
-    warn_lines = "\n".join([f':warning: { w }' for w in warnings])
-    return[{
+    warn_lines = "\n".join([f':warning: {w}' for w in warnings])
+    return [{
         "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num } ",
+        "callback_id": f"{kickup.num} ",
         "footer": warn_lines,
         "color": "warning",
     }]
+
 
 def att_players(kickup):
     if kickup.state == st.OPEN:
@@ -61,40 +66,42 @@ def att_players(kickup):
 
 
 def pairing(kickup, estimates=False):
-    est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
-    est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
+    est_a = f' (max +{int(kickup.max_win_A)})' if estimates else ''
+    est_b = f' (max +{int(kickup.max_win_B)})' if estimates else ''
     return [
-    {
-        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>{est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>{est_A}",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "color": "#000000",
-        "attachment_type": "default",
-    },
-    {
-        "text": f"   VS  ",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "attachment_type": "default",
-    },
-    {
-        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>{est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>{est_B}",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "color": "#0000FF",
-        "attachment_type": "default",
-    },
+        {
+            "text": f":goal_net:<@{kickup.pairing.goal_A.slack_id}>{est_a}\n:athletic_shoe:<@{kickup.pairing.strike_A.slack_id}>{est_a}",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{kickup.num}",
+            "color": "#000000",
+            "attachment_type": "default",
+        },
+        {
+            "text": f"   VS  ",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{kickup.num}",
+            "attachment_type": "default",
+        },
+        {
+            "text": f":athletic_shoe:<@{kickup.pairing.strike_B.slack_id}>{est_b}\n:goal_net:<@{kickup.pairing.goal_B.slack_id}>{est_b}",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{kickup.num}",
+            "color": "#0000FF",
+            "attachment_type": "default",
+        },
     ]
 
+
 def candidate_list(kickup):
-    player_list = '\n'.join([f'{ p.name }' for p in kickup.players])
+    player_list = '\n'.join([f'{p.name}' for p in kickup.players])
     return [{
-        "text": f"Current players:\n{ player_list }",
+        "text": f"Current players:\n{player_list}",
         "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
+        "callback_id": f"{kickup.num}",
         "color": "#3AA3E3",
         "attachment_type": "default",
     }]
+
 
 def result(kickup):
     if kickup.state != st.RESOLVED:
@@ -102,7 +109,7 @@ def result(kickup):
     return [{
         "text": emoji_score(kickup),
         "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
+        "callback_id": f"{kickup.num}",
         "color": "#33CC33",
         "attachment_type": "default",
     }]
@@ -125,87 +132,88 @@ def emoji_score(kickup):
         1: EmojiWinConfig('NICE GAME', ':star-struck:', ':unamused:'),
     }[abs(kickup.score_B - kickup.score_A)]
 
-    A_won = kickup.score_A > kickup.score_B
-    A_emoji = emoji_config.winner_emoji if A_won else emoji_config.loser_emoji
-    B_emoji = emoji_config.winner_emoji if not A_won else emoji_config.loser_emoji
+    a_won = kickup.score_A > kickup.score_B
+    a_emoji = emoji_config.winner_emoji if a_won else emoji_config.loser_emoji
+    b_emoji = emoji_config.winner_emoji if not a_won else emoji_config.loser_emoji
 
-    return f"*{ emoji_config.name }*: {A_emoji} { kickup.score_A }:{ kickup.score_B } {B_emoji}"
+    return f"*{emoji_config.name}*: {a_emoji} {kickup.score_A}:{kickup.score_B} {b_emoji}"
 
 
 def att_buttons(kickup):
     if kickup.state == st.OPEN:
         return [{
-            "callback_id": f"{ kickup.num }",
+            "callback_id": f"{kickup.num}",
             "fallback": "OMG",
             "actions": [
-            {
-            "name": "kickup",
-            "text": ":arrow_down: Join",
-            "type": "button",
-            "value": "join",
-            "style": "primary",
-            },
-            {
-            "name": "kickup",
-            "text": ":soccer: Start",
-            "type": "button",
-            "value": "start"
-            },
-            {
-            "name": "kickup",
-            "text": ":no_entry_sign: Cancel",
-            "type": "button",
-            "value": "cancel",
-            "style": "danger",
-            },
-            {
-            "name": "kickup",
-            "text": "DummyAdd",
-            "type": "button",
-            "value": "dummyadd"
-            },
+                {
+                    "name": "kickup",
+                    "text": ":arrow_down: Join",
+                    "type": "button",
+                    "value": "join",
+                    "style": "primary",
+                },
+                {
+                    "name": "kickup",
+                    "text": ":soccer: Start",
+                    "type": "button",
+                    "value": "start"
+                },
+                {
+                    "name": "kickup",
+                    "text": ":no_entry_sign: Cancel",
+                    "type": "button",
+                    "value": "cancel",
+                    "style": "danger",
+                },
+                {
+                    "name": "kickup",
+                    "text": "DummyAdd",
+                    "type": "button",
+                    "value": "dummyadd"
+                },
             ]
         }]
     elif kickup.state == st.RUNNING:
         return [{
-            "callback_id": f"{ kickup.num }",
+            "callback_id": f"{kickup.num}",
             "fallback": "OMG",
             "actions": [
                 {
-                "name": "score_A",
-                "text": "Score A",
-                "type": "select",
-                "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
-                "selected_options": [ {
-                    "text": str(kickup.score_A),
-                    "value": str(kickup.score_A),
+                    "name": "score_A",
+                    "text": "Score A",
+                    "type": "select",
+                    "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
+                    "selected_options": [{
+                        "text": str(kickup.score_A),
+                        "value": str(kickup.score_A),
                     }],
                 },
                 {
-                "name": "score_B",
-                "text": "Score B",
-                "type": "select",
-                "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
-                "selected_options": [ {
-                    "text": str(kickup.score_B),
-                    "value": str(kickup.score_B),
+                    "name": "score_B",
+                    "text": "Score B",
+                    "type": "select",
+                    "options": [{'text': str(i), 'value': str(i)} for i in range(7)],
+                    "selected_options": [{
+                        "text": str(kickup.score_B),
+                        "value": str(kickup.score_B),
                     }],
                 },
                 {
-                "name": "kickup",
-                "text": ":heavy_check_mark: Resolve",
-                "type": "button",
-                "value": "resolve"
+                    "name": "kickup",
+                    "text": ":heavy_check_mark: Resolve",
+                    "type": "button",
+                    "value": "resolve"
                 },
                 {
-                "name": "kickup",
-                "text": ":no_entry_sign: Cancel",
-                "type": "button",
-                "value": "cancel"
+                    "name": "kickup",
+                    "text": ":no_entry_sign: Cancel",
+                    "type": "button",
+                    "value": "cancel"
                 },
-        ]}]
+            ]}]
     else:
         return []
+
 
 def elo_leaderboard_resp(leaderboard):
     c1 = 3
@@ -233,13 +241,14 @@ def elo_leaderboard_resp(leaderboard):
 
     res_text = f'*Elo Scores:*```\n{lb_text}```\n\n*Last Result:*\n```{pos_line}\n{neg_line}```'
 
-    return jsonify( {
-            'response_type': 'in_channel',
-            'text': res_text,
+    return jsonify({
+        'response_type': 'in_channel',
+        'text': res_text,
     })
 
+
 def error_response(error_message):
-    return jsonify( {
-            'response_type': 'ephemeral',
-            'text': f':warning: { error_message }',
+    return jsonify({
+        'response_type': 'ephemeral',
+        'text': f':warning: {error_message}',
     })
