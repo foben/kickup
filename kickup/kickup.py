@@ -1,13 +1,31 @@
 import json
 import logging
+from datetime import datetime, timedelta
 from logging.config import dictConfig
-from flask import Flask, request, g
 
 import api
 import delayed
 import elo
 import persistence
 import state as st
+from flask import Flask, request, g, jsonify
+
+from adapters.persistence.mongodb import MongoMatches
+from adapters.view.slack_message import SlackMessageFactory
+from adapters.view.text import Text
+from usecases.boards import Boards
+
+
+class Configuration:
+    """
+    injects all dependencies
+    """
+    boards = Boards(MongoMatches())
+    text = Text()
+    slack = SlackMessageFactory(text)
+
+
+inject = Configuration()  # for methods, where we cant inject configuration
 
 dictConfig({
     'version': 1,
@@ -41,8 +59,36 @@ def hello():
     elif command == 'elo':
         leaderboard = elo.leaderboard(persistence.matches_sorted())
         return api.elo_leaderboard_resp(leaderboard)
+    elif command.startswith('teams'):
+        boards = inject.boards
+        teamboard = None
+        arguments = parse_arguments(command)
+        if len(arguments) == 0:
+            teamboard = boards.elo_by_team()
+        elif isinstance(arguments[0], int):
+            teamboard = boards.elo_by_teams_using_last_matches(arguments[0])
+        elif isinstance(arguments[0], timedelta):
+            teamboard = boards.elo_by_teams_using_matches_since(datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - arguments[0])
+        else:
+            return api.error_response(f'Invalid parameters: "{command}"')
+
+        return jsonify(inject.slack.from_teamboard(teamboard))
     else:
         return api.error_response(f'Invalid command: "{command}"')
+
+
+def parse_arguments(command):
+    def parse_argument(to_parse):
+        try:
+            if to_parse.endswith('d'):
+                return timedelta(days=int(to_parse[:-1]))
+            return int(to_parse)
+        except ValueError:
+            pass
+
+        return to_parse
+
+    return [parse_argument(argument) for argument in command.split()[1:]]
 
 
 @app.route("/api/interactive", methods=['GET', 'POST'])
