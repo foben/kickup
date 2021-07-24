@@ -17,6 +17,11 @@ class Pairing():
     goal_B: Player
     strike_B: Player
 
+@dataclass
+class Pairing1v1():
+    player_A: Player
+    player_B: Player
+
 OPEN = 'open'
 RUNNING = 'running'
 RESOLVED = 'resolved'
@@ -37,11 +42,15 @@ def get_kickup(num):
 class KickUp():
 
     def __init__(self, num, players_capacity=4):
+        if not players_capacity in [2,4]:
+            raise Exception(f'Invalid match size {players_capacity}!')
+
         self.num = num
         self.state = OPEN
         self.players = set()
         self.players_capacity = players_capacity
         self.pairing = None
+        self.pairing_1v1 = None
         self.warnings = set()
         self.score_B = 0
         self.score_A = 0
@@ -64,10 +73,12 @@ class KickUp():
             return
         logging.info(f'Kickup Match { self.num } has been started')
         self.state = RUNNING
-        # Scoring is only implemented for 2v2 kickups
         if self.players_capacity == 4:
             self.pairing = Pairing(*random.sample(self.players, 4))
+            # Scoring is only implemented for 2v2 kickups
             self.set_possible_scores()
+        elif self.players_capacity == 2:
+            self.pairing_1v1 = Pairing1v1(*random.sample(self.players, 2))
 
     def set_possible_scores(self):
         match_win_A = persistence.Match(

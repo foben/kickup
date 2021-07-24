@@ -34,7 +34,7 @@ def hello():
         return api.error_response('Invalid command')
     command, _, _ = request.form['text'].strip().partition(' ')
     if command == 'new':
-        new_kickup = st.new_kickup()
+        new_kickup = st.new_kickup(players_capacity=4)
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
         return api.respond(new_kickup)
     elif command == '1v1':
