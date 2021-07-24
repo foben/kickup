@@ -65,6 +65,11 @@ def player_by_slack_id(slack_id):
     return Player(**player)
 
 def save_kickup_match(kickup):
+    if kickup.players_capacity != 4:
+        logging.info(f"Not persisting results due to match size {kickup.players_capacity}")
+        return
+
+    logging.info("Persisting results to DB")
     try:
         match = {
             'goal_A': kickup.pairing.goal_A._id,

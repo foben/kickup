@@ -107,7 +107,7 @@ def handle_button(kickup, action):
         kickup.start_match()
     elif button_cmd == 'resolve':
         if kickup.resolve_match():
-            logging.info(f'Kickup { kickup.num } resolved, persisting to DB')
+            logging.info(f'Kickup { kickup.num } resolved')
             persistence.save_kickup_match(kickup)
     else:
         logging.warning(f'Received unknown button command "{ button_cmd }"')
