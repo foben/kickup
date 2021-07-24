@@ -37,6 +37,10 @@ def hello():
         new_kickup = st.new_kickup()
         logging.info(f'Created new kickup with identifier { new_kickup.num }')
         return api.respond(new_kickup)
+    elif command == '1v1':
+        new_1v1_kickup = st.new_kickup(players_capacity=2)
+        logging.info(f'Created new 1v1 kickup with identifier { new_1v1_kickup.num }')
+        return api.respond(new_1v1_kickup)
     elif command == 'elo':
         leaderboard = elo.leaderboard(persistence.matches_sorted())
         return api.elo_leaderboard_resp(leaderboard)

@@ -22,11 +22,11 @@ RUNNING = 'running'
 RESOLVED = 'resolved'
 CANCELLED = 'cancelled'
 
-def new_kickup():
+def new_kickup(players_capacity=4):
     while True:
         num = random.randint(10000,1000000)
         if num not in KICKUPS: break
-    KICKUPS[num] = KickUp(num)
+    KICKUPS[num] = KickUp(num, players_capacity)
     return KICKUPS[num]
 
 def get_kickup(num):
@@ -36,10 +36,11 @@ def get_kickup(num):
 
 class KickUp():
 
-    def __init__(self, num):
+    def __init__(self, num, players_capacity=4):
         self.num = num
         self.state = OPEN
         self.players = set()
+        self.players_capacity = players_capacity
         self.pairing = None
         self.warnings = set()
         self.score_B = 0
@@ -55,18 +56,20 @@ class KickUp():
             return True
 
     def start_match(self):
-        if len(self.players) < 4:
-            self.warnings.add('Need at least 4 players to start!')
+        if len(self.players) < self.players_capacity:
+            self.warnings.add(f'Need at least {self.players_capacity} players to start!')
             return
         if self.state == RUNNING:
             logging.info('already started')
             return
         logging.info(f'Kickup Match { self.num } has been started')
-        self.pairing = Pairing(*random.sample(self.players, 4))
         self.state = RUNNING
-        self.possible_scores()
+        # Scoring is only implemented for 2v2 kickups
+        if self.players_capacity == 4:
+            self.pairing = Pairing(*random.sample(self.players, 4))
+            self.set_possible_scores()
 
-    def possible_scores(self):
+    def set_possible_scores(self):
         match_win_A = persistence.Match(
             self.pairing.goal_A._id,
             self.pairing.strike_A._id,

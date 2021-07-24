@@ -55,36 +55,41 @@ def att_players(kickup):
     if kickup.state == st.OPEN:
         return candidate_list(kickup)
     elif kickup.state == st.RUNNING or kickup.state == st.RESOLVED:
-        return pairing(kickup, estimates=kickup.state == st.RUNNING)
+        return pairing(kickup)
     else:
         return []
 
 
-def pairing(kickup, estimates=False):
-    est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
-    est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
-    return [
-    {
-        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>{est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>{est_A}",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "color": "#000000",
-        "attachment_type": "default",
-    },
-    {
-        "text": f"   VS  ",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "attachment_type": "default",
-    },
-    {
-        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>{est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>{est_B}",
-        "fallback": "Can't display this here :(",
-        "callback_id": f"{ kickup.num }",
-        "color": "#0000FF",
-        "attachment_type": "default",
-    },
-    ]
+def pairing(kickup):
+    # Show pairing depending on number of players
+    if kickup.players_capacity == 4:
+        est_A = f' (max +{int(kickup.max_win_A)})' if kickup.state == st.RUNNING else ''
+        est_B = f' (max +{int(kickup.max_win_B)})' if kickup.state == st.RUNNING else ''
+        return [
+        {
+            "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>{est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>{est_A}",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{ kickup.num }",
+            "color": "#000000",
+            "attachment_type": "default",
+        },
+        {
+            "text": f"   VS  ",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{ kickup.num }",
+            "attachment_type": "default",
+        },
+        {
+            "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>{est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>{est_B}",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{ kickup.num }",
+            "color": "#0000FF",
+            "attachment_type": "default",
+        },
+        ]
+    elif kickup.players_capacity == 2:
+        # TODO
+        return []
 
 def candidate_list(kickup):
     player_list = '\n'.join([f'{ p.name }' for p in kickup.players])
