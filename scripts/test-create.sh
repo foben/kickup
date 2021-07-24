@@ -1,6 +1,11 @@
 #!/bin/sh
 
-NewKickup=$(curl http://localhost:8000/api/slash --form 'text=new' | sed 's_\\n_\\\\n_g')
+Command="new"
+if test -n "$1"; then
+  Command="$1"
+fi
+
+NewKickup=$(curl http://localhost:8000/api/slash --form "text=$Command" | sed 's_\\n_\\\\n_g')
 echo "$NewKickup"
 
 KickupId=$(echo "$NewKickup" | dasel -r json -w plain 'attachments.[1].callback_id')
