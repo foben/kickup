@@ -47,7 +47,8 @@ def hello():
 def interactive():
     payload = json.loads(request.form['payload'])
     user_slack_id = payload['user']['id']
-    g.context_player = set_context_player(user_slack_id)
+    # g.context_player = set_context_player(user_slack_id)
+    g.context_player = persistence.Player(name="Test",slack_id=user_slack_id)
 
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
@@ -56,11 +57,14 @@ def interactive():
         return api.respond(None)
     logging.debug(f'Retrieved kickup with id { kickup_num }')
     action = payload['actions'][0]
+    if not 'type' in action:
+        logging.warning(f'Received malformed action: { action }')
+        return api.respond(None)
     try:
         if action['type'] == 'select':
             handle_select(kickup, action)
         else:
-            handle_button(payload, kickup, action)
+            handle_button(kickup, action)
     except KickupException as ke:
         delayed.delayed_error(ke, payload['response_url'])
         logging.error(ke)
@@ -81,10 +85,13 @@ def handle_select(kickup, action):
         logging.info(f'New score for team B in kickup { kickup.num } is { new_score }')
         kickup.score_B = new_score
 
-def handle_button(payload, kickup, action):
+def handle_button(kickup, action):
+    if not 'value' in action:
+        logging.warning(f'Received malformed button action: { action }')
+        return
     button_cmd = action['value']
     if button_cmd == 'join':
-        kickup.add_player(g.context_player())
+        kickup.add_player(g.context_player)
     elif button_cmd == 'dummyadd':
         kickup.add_player(persistence.player_by_slack_id('UD12PG33M')) #marv
         kickup.add_player(persistence.player_by_slack_id('UD276006T')) #ansg
@@ -98,6 +105,8 @@ def handle_button(payload, kickup, action):
         if kickup.resolve_match():
             logging.info(f'Kickup { kickup.num } resolved, persisting to DB')
             persistence.save_kickup_match(kickup)
+    else:
+        logging.warning(f'Received unknown button command "{ button_cmd }"')
 
 def set_context_player(user_slack_id):
     player = persistence.player_by_slack_id(user_slack_id)
