@@ -1,8 +1,9 @@
 #!/bin/sh
+# Test script to create, join and resolve a match. You can either test the `new` or `1v1` command.
 
 Command="new"
-if test -n "$1"; then
-  Command="$1"
+if test "$1" = "1v1"; then
+  Command="1v1"
 fi
 
 NewKickup=$(curl http://localhost:8000/api/slash --form "text=$Command" | sed 's_\\n_\\\\n_g')

@@ -51,8 +51,7 @@ def hello():
 def interactive():
     payload = json.loads(request.form['payload'])
     user_slack_id = payload['user']['id']
-    # g.context_player = set_context_player(user_slack_id)
-    g.context_player = persistence.Player(name="Test",slack_id=user_slack_id)
+    g.context_player = set_context_player(user_slack_id)
 
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
