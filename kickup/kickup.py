@@ -51,7 +51,6 @@ def hello():
 def interactive():
     payload = json.loads(request.form['payload'])
     user_slack_id = payload['user']['id']
-    g.context_player = set_context_player(user_slack_id)
 
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
@@ -67,14 +66,17 @@ def interactive():
         if action['type'] == 'select':
             handle_select(kickup, action)
         else:
-            handle_button(kickup, action)
+            handle_button(kickup, action, user_slack_id)
     except KickupException as ke:
-        delayed.delayed_error(ke, payload['response_url'])
         logging.error(ke)
+        delayed.delayed_error(ke, payload['response_url'])
     finally:
         return api.respond(kickup)
 
 def handle_select(kickup, action):
+    if kickup.state != st.RUNNING:
+        raise KickupException(f"Kickup {kickup.num} is not running!")
+
     action_name = action['name']
     if action_name not in ('score_A', 'score_B'):
         logging.warning(f'Received unknown select action "{ action_name }"')
@@ -88,13 +90,13 @@ def handle_select(kickup, action):
         logging.info(f'New score for team B in kickup { kickup.num } is { new_score }')
         kickup.score_B = new_score
 
-def handle_button(kickup, action):
+def handle_button(kickup, action, user_slack_id):
     if not 'value' in action:
         logging.warning(f'Received malformed button action: { action }')
         return
     button_cmd = action['value']
     if button_cmd == 'join':
-        kickup.add_player(g.context_player)
+        kickup.add_player(get_player_or_fail(user_slack_id))
     elif button_cmd == 'dummyadd':
         kickup.add_player(persistence.player_by_slack_id('UD12PG33M')) #marv
         kickup.add_player(persistence.player_by_slack_id('UD276006T')) #ansg
@@ -111,13 +113,11 @@ def handle_button(kickup, action):
     else:
         logging.warning(f'Received unknown button command "{ button_cmd }"')
 
-def set_context_player(user_slack_id):
+def get_player_or_fail(user_slack_id):
     player = persistence.player_by_slack_id(user_slack_id)
-    def context_player():
-        if not player:
-            raise KickupException(f'Could not find registered player with your Slack ID!')
-        return player
-    return context_player
+    if not player:
+        raise KickupException(f'Could not find registered player with your Slack ID!')
+    return player
 
 class KickupException(Exception):
     pass

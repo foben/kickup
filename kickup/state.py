@@ -67,6 +67,7 @@ class KickUp():
     def start_match(self):
         if len(self.players) < self.players_capacity:
             self.warnings.add(f'Need at least {self.players_capacity} players to start!')
+            logging.warning(f'Kickup { self.num } needs at least {self.players_capacity} players to start!')
             return
         if self.state == RUNNING:
             logging.info('already started')
