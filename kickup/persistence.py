@@ -111,7 +111,7 @@ def matches_sorted():
 
 def matches_1v1_sorted():
     logging.debug('retrieving all 1v1 matches from database')
-    matches = [Match(**match) for match in mongo().matches_1v1.find()]
+    matches = [Match1v1(**match) for match in mongo().matches_1v1.find()]
     sorted_matches = sorted(matches, key=lambda m: m.date)
     logging.debug(f'retrieved {len(sorted_matches)} 1v1 matches from database')
     return sorted_matches

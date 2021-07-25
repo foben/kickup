@@ -69,7 +69,7 @@ def leaderboard(matches):
 
 def leaderboard_1v1(matches_1v1):
     scoring = EloGoalDiffScore(K=30, F=400, initial=1000)
-    leaderboard = Leaderboard(scoring)
+    leaderboard = Leaderboard1v1(scoring)
     for match in matches_1v1:
         leaderboard.eval_match(match)
     return leaderboard

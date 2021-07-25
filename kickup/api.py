@@ -75,10 +75,10 @@ def pairing(kickup):
         "callback_id": f"{kickup.num}",
         "attachment_type": "default",
     }
+    est_A = f' (max +{int(kickup.max_win_A)})' if kickup.state == st.RUNNING else ''
+    est_B = f' (max +{int(kickup.max_win_B)})' if kickup.state == st.RUNNING else ''
     # Show pairing depending on number of players
     if kickup.players_capacity == 4:
-        est_A = f' (max +{int(kickup.max_win_A)})' if kickup.state == st.RUNNING else ''
-        est_B = f' (max +{int(kickup.max_win_B)})' if kickup.state == st.RUNNING else ''
         return [
             attachment_with_text(f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>{est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>{est_A}"),
             vs_attachment,
@@ -86,9 +86,9 @@ def pairing(kickup):
         ]
     elif kickup.players_capacity == 2:
         return [
-            attachment_with_text(f":kicker:<@{ kickup.pairing_1v1.player_A.slack_id }>"),
+            attachment_with_text(f":kicker:<@{ kickup.pairing_1v1.player_A.slack_id }>{est_A}"),
             vs_attachment,
-            attachment_with_text(f":kicker:<@{ kickup.pairing_1v1.player_B.slack_id }>")
+            attachment_with_text(f":kicker:<@{ kickup.pairing_1v1.player_B.slack_id }>{est_B}")
         ]
 
 def candidate_list(kickup):
