@@ -36,6 +36,21 @@ class Match:
         else:
             return [self.goal_A, self.strike_A]
 
+@dataclass
+class Match1v1:
+    player_A: ObjectId
+    player_B: ObjectId
+    score_A: int
+    score_B: int
+    date: datetime.datetime
+    _id: ObjectId = None
+
+    def winners(self):
+        return [self.player_A] if self.score_A > self.score_B else [self.player_B]
+
+    def losers(self):
+        return [self.player_B] if self.score_A > self.score_B else [self.player_A]
+
 
 def mongo():
     if 'mongo' not in g:
@@ -65,17 +80,28 @@ def player_by_slack_id(slack_id):
     return Player(**player)
 
 def save_kickup_match(kickup):
+    logging.info("Persisting results to DB")
     try:
-        match = {
-            'goal_A': kickup.pairing.goal_A._id,
-            'strike_A': kickup.pairing.strike_A._id,
-            'goal_B': kickup.pairing.goal_B._id,
-            'strike_B': kickup.pairing.strike_B._id,
-            'score_A': kickup.score_A,
-            'score_B': kickup.score_B,
-            'date': datetime.datetime.utcnow(),
-        }
-        mongo().matches.insert_one(match)
+        if kickup.players_capacity == 4:
+            match = {
+                'goal_A': kickup.pairing.goal_A._id,
+                'strike_A': kickup.pairing.strike_A._id,
+                'goal_B': kickup.pairing.goal_B._id,
+                'strike_B': kickup.pairing.strike_B._id,
+                'score_A': kickup.score_A,
+                'score_B': kickup.score_B,
+                'date': datetime.datetime.utcnow(),
+            }
+            mongo().matches.insert_one(match)
+        elif kickup.players_capacity == 2:
+            match = {
+                'player_A': kickup.pairing_1v1.player_A._id,
+                'player_B': kickup.pairing_1v1.player_B._id,
+                'score_A': kickup.score_A,
+                'score_B': kickup.score_B,
+                'date': datetime.datetime.utcnow(),
+            }
+            mongo().matches_1v1.insert_one(match)
 
     except Exception as e:
         logging.error(f'Could not save kickup: {e}')
@@ -87,4 +113,11 @@ def matches_sorted():
     matches = [Match(**match) for match in mongo().matches.find()]
     sorted_matches = sorted(matches, key=lambda m: m.date)
     logging.debug(f'retrieved {len(sorted_matches)} matches from database')
+    return sorted_matches
+
+def matches_1v1_sorted():
+    logging.debug('retrieving all 1v1 matches from database')
+    matches = [Match1v1(**match) for match in mongo().matches_1v1.find()]
+    sorted_matches = sorted(matches, key=lambda m: m.date)
+    logging.debug(f'retrieved {len(sorted_matches)} 1v1 matches from database')
     return sorted_matches
