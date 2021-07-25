@@ -54,6 +54,8 @@ class KickUp():
         self.warnings = set()
         self.score_B = 0
         self.score_A = 0
+        self.max_win_A = 0
+        self.max_win_B = 0
 
     def add_player(self, player):
         if player in self.players:
@@ -75,26 +77,31 @@ class KickUp():
         logging.info(f'Kickup Match { self.num } has been started')
         self.state = RUNNING
         if self.players_capacity == 4:
-            self.pairing = Pairing(*random.sample(self.players, 4))
-            # Scoring is only implemented for 2v2 kickups
-            self.set_possible_scores()
+            self.pairing = Pairing(*random.sample(self.players, self.players_capacity))
         elif self.players_capacity == 2:
             self.pairing_1v1 = Pairing1v1(*random.sample(self.players, 2))
+        self.set_possible_scores()
 
     def set_possible_scores(self):
-        match_win_A = persistence.Match(
-            self.pairing.goal_A._id,
-            self.pairing.strike_A._id,
-            self.pairing.goal_B._id,
-            self.pairing.strike_B._id,
-            6, 0,
-            datetime.datetime.now(),
-        )
-        match_win_B = copy.deepcopy(match_win_A)
-        match_win_B.score_A = 0
-        match_win_B.score_B = 6
-        self.max_win_A = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_A).last_delta
-        self.max_win_B = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_B).last_delta
+        if self.players_capacity == 4:
+            match_win_A = persistence.Match(
+                self.pairing.goal_A._id,
+                self.pairing.strike_A._id,
+                self.pairing.goal_B._id,
+                self.pairing.strike_B._id,
+                6, 0,
+                datetime.datetime.now(),
+            )
+            match_win_B = copy.deepcopy(match_win_A)
+            match_win_B.score_A = 0
+            match_win_B.score_B = 6
+            self.max_win_A = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_A).last_delta
+            self.max_win_B = elo.leaderboard(persistence.matches_sorted()).eval_match(match_win_B).last_delta
+        elif self.players_capacity == 2:
+            match_win_A = persistence.Match1v1(player_A=self.pairing_1v1.player_A._id, player_B=self.pairing_1v1.player_B._id, score_A=6, score_B=0, date=datetime.datetime.now())
+            match_win_B = persistence.Match1v1(player_A=self.pairing_1v1.player_A._id, player_B=self.pairing_1v1.player_B._id, score_A=0, score_B=6, date=datetime.datetime.now())
+            self.max_win_A = elo.leaderboard_1v1(persistence.matches_1v1_sorted()).eval_match(match_win_A).last_delta
+            self.max_win_B = elo.leaderboard_1v1(persistence.matches_1v1_sorted()).eval_match(match_win_B).last_delta
 
     def resolve_match(self):
         if self.state == RESOLVED:

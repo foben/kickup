@@ -50,7 +50,7 @@ def hello():
 @app.route("/api/interactive", methods=['GET', 'POST'])
 def interactive():
     payload = json.loads(request.form['payload'])
-    user_slack_id = payload['user']['id']
+    user_slack_id = str(payload['user']['id'])
 
     kickup_num = int(payload['callback_id'])
     kickup = st.get_kickup(kickup_num)
