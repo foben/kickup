@@ -1,13 +1,18 @@
 import persistence
 from collections import defaultdict
 
-class Leaderboard():
+class BaseLeaderboard:
     def __init__(self, elo_system):
         self.elo_system = elo_system
         self.player_points = defaultdict(lambda: {'elo': self.elo_system.initial_score(), 'matches': 0})
         self.last_match = None
         self.last_delta = 0
 
+    def ordered(self):
+        point_list = [{'id': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items() ]
+        return sorted(point_list, key=lambda e: e['elo'], reverse=True)
+
+class Leaderboard(BaseLeaderboard):
     def eval_match(self, match):
         elo_A = (self.player_points[match.goal_A]['elo'] + self.player_points[match.strike_A]['elo']) / 2
         elo_B = (self.player_points[match.goal_B]['elo'] + self.player_points[match.strike_B]['elo']) / 2
@@ -27,17 +32,7 @@ class Leaderboard():
         self.last_delta = abs(delta_A)
         return self
 
-    def ordered(self):
-        point_list = [{'id': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items() ]
-        return sorted(point_list, key=lambda e: e['elo'], reverse=True)
-
-class Leaderboard1v1():
-    def __init__(self, elo_system):
-        self.elo_system = elo_system
-        self.player_points = defaultdict(lambda: {'elo': self.elo_system.initial_score(), 'matches': 0})
-        self.last_match = None
-        self.last_delta = 0
-
+class Leaderboard1v1(BaseLeaderboard):
     def eval_match(self, match):
         delta_A, delta_B = self.elo_system.delta_score(
             self.player_points[match.player_A]['elo'],
@@ -54,10 +49,6 @@ class Leaderboard1v1():
         self.last_match = match
         self.last_delta = abs(delta_A)
         return self
-
-    def ordered(self):
-        point_list = [{'id': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items() ]
-        return sorted(point_list, key=lambda e: e['elo'], reverse=True)
 
 
 def leaderboard(matches):

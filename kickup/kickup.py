@@ -44,6 +44,9 @@ def hello():
     elif command == 'elo':
         leaderboard = elo.leaderboard(persistence.matches_sorted())
         return api.elo_leaderboard_resp(leaderboard)
+    elif command == 'elo-1v1':
+        leaderboard_1v1 = elo.leaderboard_1v1(persistence.matches_1v1_sorted())
+        return api.elo_leaderboard_resp(leaderboard_1v1)
     else:
         return api.error_response(f'Invalid command: "{ command }"')
 

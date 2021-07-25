@@ -45,6 +45,12 @@ class Match1v1:
     date: datetime.datetime
     _id: ObjectId = None
 
+    def winners(self):
+        return [self.player_A] if self.score_A > self.score_B else [self.player_B]
+
+    def losers(self):
+        return [self.player_B] if self.score_A > self.score_B else [self.player_A]
+
 
 def mongo():
     if 'mongo' not in g:
