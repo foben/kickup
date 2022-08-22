@@ -1,0 +1,9 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: kickup
+spec:
+  template:
+    spec:
+      containers:
+      - image: europe-west6-docker.pkg.dev/kickup-360018/kickup-repo/kickup:latest
