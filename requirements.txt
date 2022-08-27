@@ -15,7 +15,7 @@ grpcio-status==1.47.0
 gunicorn==19.9.0
 idna==2.8
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 MarkupSafe==1.1.0
 proto-plus==1.22.0
 protobuf==4.21.5
