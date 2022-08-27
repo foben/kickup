@@ -85,6 +85,9 @@ class KickUp():
         if self.state == RESOLVED:
             logging.warning(f'Kickup { self.num } was resolved before!')
             return False
+        if self.state == OPEN:
+            logging.warning(f'Kickup { self.num } has not even started!')
+            return False
         if self.score_B != 6 and self.score_A != 6:
             self.warnings.add('At least one team needs 6 goals!')
             return False
@@ -92,6 +95,7 @@ class KickUp():
             self.warnings.add('Both teams can\'t have score 6!')
             return False
         logging.info(f'Kickup { self.num } has been resolved A { self.score_A }:{ self.score_B } B')
+        #TODO: this gives exactly one chance to save to db
         self.state = RESOLVED
         return True
 

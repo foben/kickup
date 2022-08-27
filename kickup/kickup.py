@@ -81,9 +81,11 @@ def handle_select(kickup, action):
         logging.info(f'New score for team B in kickup { kickup.num } is { new_score }')
         kickup.score_B = new_score
 
+
 def handle_button(payload, kickup, action):
     button_cmd = action['value']
     if button_cmd == 'join':
+        #TODO: remove context usage ?
         kickup.add_player(g.context_player())
     elif button_cmd == 'dummyadd':
         kickup.add_player(persistence.player_by_slack_id('UD12PG33M')) #marv
