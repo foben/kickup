@@ -4,7 +4,6 @@ import datetime
 import copy
 from dataclasses import dataclass
 from kickup.persistence import persistence
-from kickup.domain.usecases import elo_old
 
 KICKUPS = {}
 

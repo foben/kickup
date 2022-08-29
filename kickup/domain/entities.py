@@ -1,6 +1,7 @@
 import datetime
-from dataclasses import dataclass
-from typing import List
+import uuid
+from dataclasses import dataclass, field
+from typing import List, Set
 from enum import Enum
 
 
@@ -31,9 +32,16 @@ class PickupMatchStatus(Enum):
 
 @dataclass
 class PickupMatch:
-    id: str
-    candidates: List[Player]
-    status: PickupMatchStatus
+    id: str = str(uuid.uuid4())  # Should id generation be left to the adapters?
+    candidates: Set[Player] = field(default_factory=set)
+    status: PickupMatchStatus = PickupMatchStatus.OPEN
+    a_score: int = 0
+    b_score: int = 0
+    a_goalie: Player = None
+    a_striker: Player = None
+    b_goalie: Player = None
+    b_striker: Player = None
+
 
 
 

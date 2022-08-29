@@ -2,7 +2,6 @@ from kickup import app
 
 from flask import request, g
 from kickup import api, delayed
-from kickup.domain.usecases import elo_old
 import json
 from kickup.persistence import persistence, state as st
 from logging.config import dictConfig

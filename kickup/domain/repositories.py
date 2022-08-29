@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List
 
-from kickup.domain.entities import MatchResultDouble, Player
+from kickup.domain.entities import MatchResultDouble, Player, PickupMatch
 
 
 class MatchResultRepository(ABC):
@@ -21,3 +21,17 @@ class PlayerRepository(ABC):
     def by_id(self, player_id) -> Player:
         raise NotImplementedError
 
+    @abstractmethod
+    def create_update(self, player: Player):
+        raise NotImplementedError
+
+
+class PickupMatchRepository(ABC):
+
+    @abstractmethod
+    def by_id(self, match_id) -> PickupMatch:
+        raise NotImplementedError
+
+    @abstractmethod
+    def create_update(self, match: PickupMatch):
+        raise NotImplementedError
