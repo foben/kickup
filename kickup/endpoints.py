@@ -1,11 +1,10 @@
-from flask import Flask, request, jsonify, g
-import threading
-import state as st
-import api
+from kickup import app
+
+from flask import request, g
+from kickup import api, delayed
+from kickup.domain.usecases import elo_old
 import json
-import elo
-import persistence
-import delayed
+from kickup.persistence import persistence, state as st
 from logging.config import dictConfig
 import logging
 
@@ -25,8 +24,6 @@ dictConfig({
     }
 })
 
-app = Flask(__name__)
-
 @app.route("/api/slash", methods=['GET', 'POST'])
 def hello():
     if not 'text' in request.form or request.form['text'] == "":
@@ -42,6 +39,7 @@ def hello():
         return api.elo_leaderboard_resp(leaderboard)
     else:
         return api.error_response(f'Invalid command: "{ command }"')
+
 
 @app.route("/api/interactive", methods=['GET', 'POST'])
 def interactive():
@@ -111,6 +109,6 @@ def set_context_player(user_slack_id):
 
 class KickupException(Exception):
     pass
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8000)
+#
+# if __name__ == '__main__':
+#     app.run(debug=True, host='0.0.0.0', port=8000)

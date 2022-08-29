@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from flask import jsonify
-import state as st
-import persistence
+from kickup.persistence import persistence, state as st
+
 
 def respond(kickup):
     if kickup is None:
@@ -39,6 +39,7 @@ def button_resp(kickup):
         }
 )
 
+
 def att_footer(kickup):
     warnings = kickup.process_warnings()
     if not warnings:
@@ -50,6 +51,7 @@ def att_footer(kickup):
         "footer": warn_lines,
         "color": "warning",
     }]
+
 
 def att_players(kickup):
     if kickup.state == st.OPEN:
@@ -86,6 +88,7 @@ def pairing(kickup, estimates=False):
     },
     ]
 
+
 def candidate_list(kickup):
     player_list = '\n'.join([f'{ p.name }' for p in kickup.players])
     return [{
@@ -95,6 +98,7 @@ def candidate_list(kickup):
         "color": "#3AA3E3",
         "attachment_type": "default",
     }]
+
 
 def result(kickup):
     if kickup.state != st.RESOLVED:
@@ -207,6 +211,7 @@ def att_buttons(kickup):
     else:
         return []
 
+
 def elo_leaderboard_resp(leaderboard):
     c1 = 3
     c2 = 13
@@ -237,6 +242,7 @@ def elo_leaderboard_resp(leaderboard):
             'response_type': 'in_channel',
             'text': res_text,
     })
+
 
 def error_response(error_message):
     return jsonify( {

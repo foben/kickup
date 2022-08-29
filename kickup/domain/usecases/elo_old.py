@@ -1,5 +1,5 @@
-import persistence
 from collections import defaultdict
+
 
 class Leaderboard():
     def __init__(self, elo_system):
@@ -39,7 +39,8 @@ def leaderboard(matches):
         leaderboard.eval_match(match)
     return leaderboard
 
-#Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
+
+# Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
 class EloGoalDiffScore():
 
     def __init__(self, K, F, initial):

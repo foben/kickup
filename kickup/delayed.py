@@ -1,7 +1,6 @@
-import api
 import threading
 import requests
-import time
+
 
 def delayed_error(msg, response_url):
     def request_async(msg, response_url):

@@ -1,21 +1,20 @@
 import random
 import logging
-import elo
 import datetime
 import copy
 from dataclasses import dataclass
-from persistence import Player
-import persistence
+from kickup.persistence import persistence
+from kickup.domain.usecases import elo_old
 
 KICKUPS = {}
 
 @dataclass
 class Pairing():
-    goal_A: Player
-    strike_A: Player
+    goal_A: persistence.Player
+    strike_A: persistence.Player
 
-    goal_B: Player
-    strike_B: Player
+    goal_B: persistence.Player
+    strike_B: persistence.Player
 
 OPEN = 'open'
 RUNNING = 'running'
