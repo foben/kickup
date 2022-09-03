@@ -11,7 +11,7 @@ class MatchResultRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def save_double_result(self, match_result):
+    def save_double_result(self, match_result: MatchResultDouble):
         raise NotImplementedError
 
 
@@ -23,6 +23,10 @@ class PlayerRepository(ABC):
 
     @abstractmethod
     def create_update(self, player: Player):
+        raise NotImplementedError
+
+    @abstractmethod
+    def by_external_id(self, external_id_type, external_id) -> Player:
         raise NotImplementedError
 
 

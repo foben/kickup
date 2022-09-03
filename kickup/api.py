@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from flask import jsonify
+
+from kickup.domain.entities import MatchResultDouble
 from kickup.persistence import persistence, state as st
 
 
@@ -16,6 +18,7 @@ def respond(kickup):
         })
     else:
         return button_resp(kickup)
+
 
 def button_resp(kickup):
     if kickup.state == st.OPEN:
@@ -63,11 +66,14 @@ def att_players(kickup):
 
 
 def pairing(kickup, estimates=False):
-    est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
-    est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
+    # TODO: re-implement preview in domain
+    # est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
+    # est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
+
+    est_A, est_B = 0, 0
     return [
     {
-        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>{est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>{est_A}",
+        "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>({kickup.pairing.goal_A.name}){est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>({kickup.pairing.strike_A.name}){est_A}",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#000000",
@@ -80,7 +86,7 @@ def pairing(kickup, estimates=False):
         "attachment_type": "default",
     },
     {
-        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>{est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>{est_B}",
+        "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>({kickup.pairing.strike_B.name}){est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>({kickup.pairing.goal_B.name}){est_B}",
         "fallback": "Can't display this here :(",
         "callback_id": f"{ kickup.num }",
         "color": "#0000FF",
@@ -219,10 +225,17 @@ def elo_leaderboard_resp(leaderboard):
     c4 = 5
     lines = []
 
+    if len(leaderboard.ordered()) == 0:
+        return jsonify( {
+            'response_type': 'in_channel',
+            'text': '```<<no leaderboard entries to display>>```',
+    })
+
     max_count = (max(map(lambda entry: int(entry["matches"]), leaderboard.ordered())))
 
     for idx, entry in enumerate(leaderboard.ordered()):
-        player = persistence.player_by_id(entry['id'])
+        # player = persistence.player_by_id(entry['player'].id)
+        player = entry["player"]
         pos = str(idx + 1) + '.'
         name = player.name[:c2]
         matchcount = '|' * (int(entry["matches"] / max_count / 0.20001) + 1)
@@ -230,8 +243,7 @@ def elo_leaderboard_resp(leaderboard):
         lines.append(f'{pos:>{c1}} {name:<{c2}} {matchcount:<{c3}} {score:>{c4}}')
     lb_text = "\n".join(lines)
 
-    pos_names = ", ".join([p.name for p in persistence.players_by_ids(leaderboard.last_match.winners())])
-    neg_names = ", ".join([p.name for p in persistence.players_by_ids(leaderboard.last_match.losers())])
+    pos_names, neg_names = winners_losers_str(leaderboard.last_match)
 
     pos_line = f'↗️  {pos_names:40} +{int(leaderboard.last_delta)}'
     neg_line = f'↘️  {neg_names:40} -{int(leaderboard.last_delta)}'
@@ -242,6 +254,15 @@ def elo_leaderboard_resp(leaderboard):
             'response_type': 'in_channel',
             'text': res_text,
     })
+
+
+def winners_losers_str(res: MatchResultDouble):
+    a_team = f"{res.a_striker.name}, {res.a_goalie.name}"
+    b_team = f"{res.b_striker.name}, {res.b_goalie.name}"
+    if res.a_score > res.b_score:
+        return a_team, b_team
+    else:
+        return b_team, a_team
 
 
 def error_response(error_message):

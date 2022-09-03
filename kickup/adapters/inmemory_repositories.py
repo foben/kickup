@@ -33,7 +33,7 @@ class InMemoryPickupMatchRepository(PickupMatchRepository):
     def create_update(self, match: PickupMatch):
         if match.id is None or match.id == "":
             raise ValueError("No id set")
-        self.pickup_matches[match.id] = match
+        self.pickup_matches[str(match.id)] = match
 
 
 class InMemoryPlayerRepository(PlayerRepository):
@@ -51,3 +51,6 @@ class InMemoryPlayerRepository(PlayerRepository):
         if player.id is None or player.id == "":
             raise ValueError("No id set")
         self.players[player.id] = player
+
+    def by_external_id(self, external_id_type, external_id) -> Player:
+        raise NotImplementedError("TODO!")

@@ -1,4 +1,5 @@
 import datetime
+import logging
 import uuid
 from dataclasses import dataclass
 from uuid import UUID
@@ -24,6 +25,13 @@ STATIC_UUIDS = [
 ]
 
 
+def logname(test_func):
+    def wrapper():
+        logging.info(f"Executing {test_func.__name__}")
+        test_func()
+    return wrapper
+
+
 def dummy_players():
     return [
         Player(STATIC_UUIDS[0], "Valerio"),
@@ -34,17 +42,19 @@ def dummy_players():
     ]
 
 
+@logname
 def test_pickup_match():
     pickup_match_repo = InMemoryPickupMatchRepository()
     player_repo = InMemoryPlayerRepository()
+    match_repo = InMemoryMatchResultRepository()
     for pl in dummy_players():
         player_repo.create_update(pl)
 
-    usecase = PickupMatchUsecase(pickup_match_repo, player_repo)
+    usecase = PickupMatchUsecase(pickup_match_repo, player_repo, match_repo)
     usecase.create_pickup_match()
 
     assert len(pickup_match_repo.get_all()) == 1
-    _id = pickup_match_repo.get_all()[0].id
+    _id = str(pickup_match_repo.get_all()[0].id)
 
     except_text = ""
     try:
@@ -65,11 +75,12 @@ def test_pickup_match():
     assert pickup_match.b_goalie.id in STATIC_UUIDS
 
 
+@logname
 def test_elo_leaderboard():
     match_repo = InMemoryMatchResultRepository()
     p1, p2, p3, p4 = dummy_players()[:4]
     m1 = MatchResultDouble(
-        uid(), p1, p2, p3, p4, 6, 0, datetime.date.today()
+        p1, p2, p3, p4, 6, 0
     )
     match_repo.save_double_result(m1)
 
@@ -78,6 +89,7 @@ def test_elo_leaderboard():
     assert True
 
 
+@logname
 def test_firestore_leaderboard():
     player_repo = FirestorePlayerRepository()
     match_result_repo = FirestoreMatchResultRepository(player_repo)

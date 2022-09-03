@@ -52,12 +52,12 @@ class Leaderboard:
         return self
 
     def ordered(self):
-        point_list = [{'id': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items() ]
+        point_list = [{'player': i[0], 'elo': i[1]['elo'], 'matches': i[1]['matches']} for i in self.player_points.items()]
         return sorted(point_list, key=lambda e: e['elo'], reverse=True)
 
 
 # Based on the formula provided at: https://de.wikipedia.org/wiki/World_Football_Elo_Ratings
-class EloGoalDiffScore():
+class EloGoalDiffScore:
 
     def __init__(self, K, F, initial):
         self.K = K

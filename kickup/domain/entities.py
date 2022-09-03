@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import uuid
 from dataclasses import dataclass, field
 from typing import List, Set
@@ -13,14 +13,14 @@ class Player:
 
 @dataclass
 class MatchResultDouble:
-    id: str
     a_goalie: Player
     a_striker: Player
     b_goalie: Player
     b_striker: Player
     a_score: int
     b_score: int
-    date: datetime.date
+    date: datetime = field(default_factory=datetime.now)
+    id: str = field(default_factory=uuid.uuid4)
 
 
 class PickupMatchStatus(Enum):
@@ -32,7 +32,7 @@ class PickupMatchStatus(Enum):
 
 @dataclass
 class PickupMatch:
-    id: str = str(uuid.uuid4())  # Should id generation be left to the adapters?
+    id: str = field(default_factory=uuid.uuid4)
     candidates: Set[Player] = field(default_factory=set)
     status: PickupMatchStatus = PickupMatchStatus.OPEN
     a_score: int = 0
