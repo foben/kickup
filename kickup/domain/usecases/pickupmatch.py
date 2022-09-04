@@ -72,6 +72,8 @@ class PickupMatchUsecase:
         return pickup_match
 
     def set_team_a_score(self, pickup_match: PickupMatch, score: int) -> PickupMatch:
+        if pickup_match.status != PickupMatchStatus.STARTED:
+            logging.warning(f"tried setting b score for {pickup_match.id} in status {pickup_match.status}")
         if score < 0 or score > WINNING_SCORE:
             raise ValueError(f"{score} is an invalid score")
         pickup_match.a_score = score
@@ -79,6 +81,8 @@ class PickupMatchUsecase:
         return pickup_match
 
     def set_team_b_score(self, pickup_match: PickupMatch, score: int) -> PickupMatch:
+        if pickup_match.status != PickupMatchStatus.STARTED:
+            logging.warning(f"tried setting a score for {pickup_match.id} in status {pickup_match.status}")
         if score < 0 or score > WINNING_SCORE:
             raise ValueError(f"{score} is an invalid score")
         pickup_match.b_score = score

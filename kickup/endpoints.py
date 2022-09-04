@@ -1,4 +1,5 @@
 import threading
+from uuid import UUID
 
 import requests
 
@@ -44,7 +45,7 @@ def slack_interactive():
     payload = json.loads(request.form["payload"])
 
     user_slack_id: str = payload["user"]["id"]
-    pickup_match_id: str = payload["callback_id"]
+    pickup_match_id: UUID = UUID(payload["callback_id"])
 
     target_pickup_match = kickup_app.pickup_match_repository.by_id(pickup_match_id)
     if not target_pickup_match:

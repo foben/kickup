@@ -1,4 +1,6 @@
+import datetime
 import logging
+from dataclasses import dataclass, asdict
 from uuid import UUID
 from typing import List
 from google.cloud import firestore
@@ -62,6 +64,17 @@ class FirestorePlayerRepository(PlayerRepository):
         return FirestorePlayerRepository.map_firestore_dict(results[0])
 
 
+@dataclass
+class FirestoreMatchResultDao:
+    a_goalie: str
+    a_striker: str
+    b_goalie: str
+    b_striker: str
+    a_score: int
+    b_score: int
+    date: datetime.datetime
+
+
 class FirestoreMatchResultRepository(MatchResultRepository):
     def __init__(self, player_repo: FirestorePlayerRepository):
         self.player_repository = player_repo
@@ -92,4 +105,17 @@ class FirestoreMatchResultRepository(MatchResultRepository):
         return all_matches
 
     def save_double_result(self, match_result: MatchResultDouble):
-        raise NotImplementedError
+        dao = FirestoreMatchResultDao(
+            str(match_result.a_goalie.id),
+            str(match_result.a_striker.id),
+            str(match_result.b_goalie.id),
+            str(match_result.b_striker.id),
+            match_result.a_score,
+            match_result.b_score,
+            match_result.date
+        )
+        logging.info(f"writing match result {match_result.id} to database")
+        self.fstore.collection("matches").document(str(match_result.id)).set(
+            asdict(dao)
+        )
+        logging.info(f"successfully written match result {match_result.id} to database")

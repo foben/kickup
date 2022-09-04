@@ -9,11 +9,6 @@ from kickup.domain.usecases.pickupmatch import PickupMatchUsecase
 from kickup.adapters.inmemory_repositories import InMemoryMatchResultRepository, InMemoryPickupMatchRepository, \
     InMemoryPlayerRepository
 
-
-def uid():
-    return str(uuid.uuid4())
-
-
 STATIC_UUIDS = [
     UUID('196df377-305f-42ce-b0e0-163d2cb55eb9'),
     UUID('f4ea980d-d553-44d7-b6a5-43217d93167c'),
