@@ -25,7 +25,7 @@ CANCELLED = 'cancelled'
 
 
 # This should be the slack 'DTO' for pickup matches
-class KickUp:
+class SlackPickupMatchTDO:
 
     def __init__(self, num):
         self.num = num
@@ -77,8 +77,8 @@ def map_domain_pickup_match_pairing(pickup_match: PickupMatch) -> SlackPairingDT
     )
 
 
-def map_domain_pickup_match_to_slack_dto(pickup_match: PickupMatch) -> KickUp:
-    k = KickUp(
+def map_domain_pickup_match_to_slack_dto(pickup_match: PickupMatch) -> SlackPickupMatchTDO:
+    k = SlackPickupMatchTDO(
         pickup_match.id
     )
     k.state = map_domain_state(pickup_match.status)

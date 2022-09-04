@@ -8,6 +8,7 @@ from flask import request
 from kickup import api
 import json
 
+from kickup.api import error_response
 from kickup.domain.usecases.leaderboard import LeaderboardUsecase
 from kickup.domain.usecases.pickupmatch import PickupMatchUsecase
 from kickup.domain.usecases.playermapping import PlayerMappingUsecase
@@ -26,8 +27,8 @@ def slack_slash_commands():
     if command == 'new':
         pickup_match = PickupMatchUsecase(
             kickup_app.pickup_match_repository,
-            kickup_app.player_repository,
-            kickup_app.match_result_repository).create_pickup_match()
+            kickup_app.match_result_repository,
+        ).create_pickup_match()
         mapped_pickup = map_domain_pickup_match_to_slack_dto(pickup_match)
         logging.info(f'Created new kickup with identifier { mapped_pickup.num }')
         return api.respond(mapped_pickup)
@@ -42,16 +43,26 @@ def slack_slash_commands():
 @flask_app.route("/api/interactive", methods=['GET', 'POST'])
 def slack_interactive():
     payload = json.loads(request.form['payload'])
-    user_slack_id = payload['user']['id']
 
-    pickup_match_id = payload['callback_id']
-    response_kickup = None
+    user_slack_id: str = payload['user']['id']
+    pickup_match_id: str = payload['callback_id']
+
+    target_pickup_match = kickup_app.pickup_match_repository.by_id(pickup_match_id)
+    if not target_pickup_match:
+        logging.warning(f"could not get a PickupMatch for the callback_id {pickup_match_id}")
+        return error_response("couldn't find a PickupMatch for your request")
+
+    acting_player = kickup_app.player_repository.by_external_id("slack", user_slack_id)
+    if not acting_player:
+        logging.warning(f"could not find a Player for the external slack-id {user_slack_id}")
+        return error_response("it looks like you're not set up for KickUp 😥")
+
+    modified_pickup_match = None
     action = payload['actions'][0]
 
     uc_pickup = PickupMatchUsecase(
         kickup_app.pickup_match_repository,
-        kickup_app.player_repository,
-        kickup_app.match_result_repository
+        kickup_app.match_result_repository,
     )
 
     # TODO: during refactoring, all cases were thrown together in this one if-else monster
@@ -68,48 +79,42 @@ def slack_interactive():
             new_score = int(action['selected_options'][0]['value'])
 
             if action_name == 'score_A':
-                logging.info(f'New score for team A in kickup {pickup_match_id} is {new_score}')
-                pickup_match = uc_pickup.set_team_a_score(pickup_match_id, new_score)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                logging.info(f'New score for team A in kickup {target_pickup_match.id} is {new_score}')
+                modified_pickup_match = uc_pickup.set_team_a_score(target_pickup_match, new_score)
             elif action_name == 'score_B':
-                logging.info(f'New score for team B in kickup {pickup_match_id} is {new_score}')
-                pickup_match = uc_pickup.set_team_b_score(pickup_match_id, new_score)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                logging.info(f'New score for team B in kickup {target_pickup_match.id} is {new_score}')
+                modified_pickup_match = uc_pickup.set_team_b_score(target_pickup_match, new_score)
 
         ################################
         # One of the buttons was pressed
         else:
-            uc_playermap = PlayerMappingUsecase(kickup_app.player_repository)
-            player = uc_playermap.get_player_for_external_id("slack", user_slack_id)
-            if not player:
-                # TODO: handle errors gracefully
-                raise ValueError(f"unable to get internal player id for this external id")
-
             button_cmd = action['value']
             if button_cmd == 'join':
-                pickup_match = uc_pickup.join_pickup_match(pickup_match_id, player.id)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                modified_pickup_match = uc_pickup.join_pickup_match(target_pickup_match, acting_player)
             elif button_cmd == 'dummyadd':
-                uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UD12PG33M").id)
-                uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UD276006T").id)
-                uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UCYCRPM37").id)
-                pickup_match = uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UFL1ME8S1").id)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                dummy_one = kickup_app.player_repository.by_external_id("slack", "UD12PG33M")
+                dummy_two = kickup_app.player_repository.by_external_id("slack", "UD276006T")
+                dummy_three = kickup_app.player_repository.by_external_id("slack", "UCYCRPM37")
+                dummy_four = kickup_app.player_repository.by_external_id("slack", "UFL1ME8S1")
+
+                uc_pickup.join_pickup_match(target_pickup_match, dummy_one)
+                uc_pickup.join_pickup_match(target_pickup_match, dummy_two)
+                uc_pickup.join_pickup_match(target_pickup_match, dummy_three)
+                modified_pickup_match = uc_pickup.join_pickup_match(target_pickup_match, dummy_four)
+
             elif button_cmd == 'cancel':
-                pickup_match = uc_pickup.cancel_pickup_match(pickup_match_id)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                modified_pickup_match = uc_pickup.cancel_pickup_match(target_pickup_match)
             elif button_cmd == 'start':
-                pickup_match = uc_pickup.start_pickup_match(pickup_match_id)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                modified_pickup_match = uc_pickup.start_pickup_match(target_pickup_match)
             elif button_cmd == 'resolve':
-                pickup_match = uc_pickup.resolve_match(pickup_match_id)
-                response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
+                modified_pickup_match = uc_pickup.resolve_match(target_pickup_match)
 
     except KickupException as ke:
         delayed_error(ke, payload['response_url'])
         logging.error(ke)
     finally:
-        return api.respond(response_kickup)
+        response_dto = map_domain_pickup_match_to_slack_dto(modified_pickup_match)
+        return api.respond(response_dto)
 
 
 class KickupException(Exception):

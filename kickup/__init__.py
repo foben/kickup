@@ -5,6 +5,7 @@ from kickup.adapters.inmemory_repositories import InMemoryPickupMatchRepository,
     InMemoryMatchResultRepository
 from logging.config import dictConfig
 
+from kickup.domain.repositories import PickupMatchRepository, PlayerRepository, MatchResultRepository
 
 dictConfig({
     'version': 1,
@@ -27,7 +28,10 @@ flask_app = Flask(__name__)
 
 class KickUpApp:
 
-    def __init__(self, pickup_match_repository, player_repository, match_result_repository):
+    def __init__(self, pickup_match_repository: PickupMatchRepository,
+                 player_repository: PlayerRepository,
+                 match_result_repository: MatchResultRepository
+                 ):
         self.pickup_match_repository = pickup_match_repository
         self.player_repository = player_repository
         self.match_result_repository = match_result_repository
@@ -37,8 +41,8 @@ player_repo = FirestorePlayerRepository()
 kickup_app = KickUpApp(
     InMemoryPickupMatchRepository(),
     player_repo,
-    InMemoryMatchResultRepository(),
-    # FirestoreMatchResultRepository(player_repo),
+    # InMemoryMatchResultRepository(),
+    FirestoreMatchResultRepository(player_repo),
 )
 
 import kickup.endpoints

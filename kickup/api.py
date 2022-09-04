@@ -266,7 +266,8 @@ def winners_losers_str(res: MatchResultDouble):
 
 
 def error_response(error_message):
-    return jsonify( {
-            'response_type': 'ephemeral',
-            'text': f':warning: { error_message }',
+    return jsonify({
+            "response_type": "ephemeral",
+            "replace_original": False,
+            "text": f":warning: { error_message }",
     })
