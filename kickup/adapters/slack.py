@@ -18,15 +18,14 @@ class SlackPairingDTO:
     strike_B: SlackPlayerDTO
 
 
-OPEN = 'open'
-RUNNING = 'running'
-RESOLVED = 'resolved'
-CANCELLED = 'cancelled'
+OPEN = "open"
+RUNNING = "running"
+RESOLVED = "resolved"
+CANCELLED = "cancelled"
 
 
 # This should be the slack 'DTO' for pickup matches
 class SlackPickupMatchTDO:
-
     def __init__(self, num):
         self.num = num
         self.state = OPEN
@@ -58,11 +57,7 @@ def map_domain_state(domain_state: PickupMatchStatus) -> str:
 
 
 def map_domain_player(domain_player: Player) -> SlackPlayerDTO:
-    return SlackPlayerDTO(
-        domain_player.name,
-        "unmappable",
-        domain_player.id
-    )
+    return SlackPlayerDTO(domain_player.name, "unmappable", domain_player.id)
 
 
 def map_domain_pickup_match_pairing(pickup_match: PickupMatch) -> SlackPairingDTO:
@@ -77,10 +72,10 @@ def map_domain_pickup_match_pairing(pickup_match: PickupMatch) -> SlackPairingDT
     )
 
 
-def map_domain_pickup_match_to_slack_dto(pickup_match: PickupMatch) -> SlackPickupMatchTDO:
-    k = SlackPickupMatchTDO(
-        pickup_match.id
-    )
+def map_domain_pickup_match_to_slack_dto(
+    pickup_match: PickupMatch,
+) -> SlackPickupMatchTDO:
+    k = SlackPickupMatchTDO(pickup_match.id)
     k.state = map_domain_state(pickup_match.status)
     k.players = set(pickup_match.candidates)
 

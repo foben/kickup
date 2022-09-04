@@ -41,8 +41,3 @@ class PickupMatch:
     a_striker: Player = None
     b_goalie: Player = None
     b_striker: Player = None
-
-
-
-
-

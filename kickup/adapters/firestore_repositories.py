@@ -9,7 +9,6 @@ from kickup.domain.repositories import MatchResultRepository, PlayerRepository
 
 
 class FirestorePlayerRepository(PlayerRepository):
-
     @classmethod
     def map_firestore_dict(cls, fstore_player: DocumentSnapshot) -> Player:
         return Player(
@@ -18,9 +17,9 @@ class FirestorePlayerRepository(PlayerRepository):
         )
 
     def __init__(self):
-        logging.debug('Setting up Firestore client for PlayerRepository')
+        logging.debug("Setting up Firestore client for PlayerRepository")
         # TODO: inject
-        self.fstore = firestore.Client(project='kickup-360018')
+        self.fstore = firestore.Client(project="kickup-360018")
         self.by_id_cache = {}
 
     def by_id(self, player_id) -> Player:
@@ -43,10 +42,14 @@ class FirestorePlayerRepository(PlayerRepository):
     def by_external_id(self, external_id_type, external_id) -> Player:
         if external_id_type != "slack":
             raise NotImplementedError(f"unknown id type '{external_id_type}''")
-        query_ref = self.fstore.collection("players").where("slack_id", "==", external_id)
+        query_ref = self.fstore.collection("players").where(
+            "slack_id", "==", external_id
+        )
         results = [x for x in query_ref.stream()]
         if len(results) < 1:
-            logging.info(f"no results for external '{external_id_type}' id '{external_id}'")
+            logging.info(
+                f"no results for external '{external_id_type}' id '{external_id}'"
+            )
             return None
         elif len(results) > 1:
             logging.warning(
@@ -57,15 +60,14 @@ class FirestorePlayerRepository(PlayerRepository):
 
 
 class FirestoreMatchResultRepository(MatchResultRepository):
-
     def __init__(self, player_repo: FirestorePlayerRepository):
         self.player_repository = player_repo
-        logging.debug('Setting up Firestore client for MatchResultRepository')
+        logging.debug("Setting up Firestore client for MatchResultRepository")
         # TODO: inject
-        self.fstore = firestore.Client(project='kickup-360018')
+        self.fstore = firestore.Client(project="kickup-360018")
 
     def all_double_results(self) -> List[MatchResultDouble]:
-        logging.debug('retrieving all matches from GCP firestore')
+        logging.debug("retrieving all matches from GCP firestore")
 
         match_coll = self.fstore.collection("matches")
         # match_docs = match_coll.stream()

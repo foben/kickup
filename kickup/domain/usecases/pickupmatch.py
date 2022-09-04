@@ -1,19 +1,27 @@
 import logging
 import random
 
-from kickup.domain.entities import PickupMatch, Player, PickupMatchStatus, MatchResultDouble
+from kickup.domain.entities import (
+    PickupMatch,
+    Player,
+    PickupMatchStatus,
+    MatchResultDouble,
+)
 from kickup.domain.repositories import PickupMatchRepository, MatchResultRepository
 
 WINNING_SCORE = 6
 
 
 class PickupMatchUsecase:
-
-    def __init__(self, pickup_match_repo: PickupMatchRepository, match_repo: MatchResultRepository):
+    def __init__(
+        self,
+        pickup_match_repo: PickupMatchRepository,
+        match_repo: MatchResultRepository,
+    ):
         if not isinstance(pickup_match_repo, PickupMatchRepository):
-            raise TypeError('Not a proper PickupMatchRepository')
+            raise TypeError("Not a proper PickupMatchRepository")
         if not isinstance(match_repo, MatchResultRepository):
-            raise TypeError('Not a proper MatchResultRepository')
+            raise TypeError("Not a proper MatchResultRepository")
         self.pickup_match_repo = pickup_match_repo
         self.match_repo = match_repo
 
@@ -27,7 +35,9 @@ class PickupMatchUsecase:
         self.pickup_match_repo.create_update(pickup_match)
         return pickup_match
 
-    def join_pickup_match(self, pickup_match: PickupMatch, player: Player) -> PickupMatch:
+    def join_pickup_match(
+        self, pickup_match: PickupMatch, player: Player
+    ) -> PickupMatch:
         if pickup_match.status != PickupMatchStatus.OPEN:
             raise NotImplementedError  # TODO
         logging.info(f"player {player} has joined pickup match {pickup_match}")
@@ -35,7 +45,9 @@ class PickupMatchUsecase:
         self.pickup_match_repo.create_update(pickup_match)
         return pickup_match
 
-    def leave_pickup_match(self, pickup_match: PickupMatch, player: Player) -> PickupMatch:
+    def leave_pickup_match(
+        self, pickup_match: PickupMatch, player: Player
+    ) -> PickupMatch:
         if pickup_match.status != PickupMatchStatus.OPEN:
             raise NotImplementedError  # TODO
         if player in pickup_match.candidates:
@@ -75,30 +87,32 @@ class PickupMatchUsecase:
 
     def resolve_match(self, pickup_match: PickupMatch) -> PickupMatch:
         if pickup_match.status == PickupMatchStatus.RESOLVED:
-            logging.warning(f'match {pickup_match.id} was resolved before!')
+            logging.warning(f"match {pickup_match.id} was resolved before!")
             return pickup_match
         if pickup_match.status == PickupMatchStatus.OPEN:
-            logging.warning(f'match { pickup_match.id } has not even started!')
+            logging.warning(f"match { pickup_match.id } has not even started!")
             return pickup_match
         if pickup_match.status == PickupMatchStatus.CANCELED:
-            logging.warning(f'match { pickup_match.id } was cancelled')
+            logging.warning(f"match { pickup_match.id } was cancelled")
             return pickup_match
 
         if pickup_match.a_score != 6 and pickup_match.b_score != 6:
-            logging.warning('At least one team needs 6 goals!')
+            logging.warning("At least one team needs 6 goals!")
             return pickup_match
         if pickup_match.a_score == 6 and pickup_match.b_score == 6:
-            logging.warning('Both teams can\'t have score 6!')
+            logging.warning("Both teams can't have score 6!")
             return pickup_match
 
         pickup_match.status = PickupMatchStatus.RESOLVED
 
         res = MatchResultDouble(
-            pickup_match.a_goalie, pickup_match.a_striker, pickup_match.b_goalie, pickup_match.b_striker, pickup_match.a_score, pickup_match.b_score
+            pickup_match.a_goalie,
+            pickup_match.a_striker,
+            pickup_match.b_goalie,
+            pickup_match.b_striker,
+            pickup_match.a_score,
+            pickup_match.b_score,
         )
         self.pickup_match_repo.create_update(pickup_match)
         self.match_repo.save_double_result(res)
         return pickup_match
-
-
-

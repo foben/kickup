@@ -1,11 +1,14 @@
 from typing import List
 
 from kickup.domain.entities import MatchResultDouble, PickupMatch, Player
-from kickup.domain.repositories import MatchResultRepository, PickupMatchRepository, PlayerRepository
+from kickup.domain.repositories import (
+    MatchResultRepository,
+    PickupMatchRepository,
+    PlayerRepository,
+)
 
 
 class InMemoryMatchResultRepository(MatchResultRepository):
-
     def __init__(self):
         self.matches = {}
 
@@ -17,7 +20,6 @@ class InMemoryMatchResultRepository(MatchResultRepository):
 
 
 class InMemoryPickupMatchRepository(PickupMatchRepository):
-
     def __init__(self):
         self.pickup_matches = {}
 
@@ -37,7 +39,6 @@ class InMemoryPickupMatchRepository(PickupMatchRepository):
 
 
 class InMemoryPlayerRepository(PlayerRepository):
-
     def __init__(self):
         self.players = {}
 

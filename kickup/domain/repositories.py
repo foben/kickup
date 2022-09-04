@@ -5,7 +5,6 @@ from kickup.domain.entities import MatchResultDouble, Player, PickupMatch
 
 
 class MatchResultRepository(ABC):
-
     @abstractmethod
     def all_double_results(self) -> List[MatchResultDouble]:
         raise NotImplementedError
@@ -16,7 +15,6 @@ class MatchResultRepository(ABC):
 
 
 class PlayerRepository(ABC):
-
     @abstractmethod
     def by_id(self, player_id) -> Player:
         raise NotImplementedError
@@ -31,7 +29,6 @@ class PlayerRepository(ABC):
 
 
 class PickupMatchRepository(ABC):
-
     @abstractmethod
     def by_id(self, match_id) -> PickupMatch:
         raise NotImplementedError
