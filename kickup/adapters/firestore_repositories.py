@@ -1,6 +1,6 @@
 import logging
-from abc import ABC
-from typing import List, Optional
+from uuid import UUID
+from typing import List
 from google.cloud import firestore
 from google.cloud.firestore_v1 import DocumentSnapshot
 
@@ -12,7 +12,7 @@ class FirestorePlayerRepository(PlayerRepository):
     @classmethod
     def map_firestore_dict(cls, fstore_player: DocumentSnapshot) -> Player:
         return Player(
-            fstore_player.id,
+            UUID(fstore_player.id),
             fstore_player.to_dict()["name"],
         )
 
@@ -22,12 +22,15 @@ class FirestorePlayerRepository(PlayerRepository):
         self.fstore = firestore.Client(project="kickup-360018")
         self.by_id_cache = {}
 
-    def by_id(self, player_id) -> Player:
+    def by_id(self, player_id: UUID) -> Player:
+        if not isinstance(player_id, UUID):
+            raise ValueError("please provide id as UUID")
+
         if player_id not in self.by_id_cache:
-            p_doc = self.fstore.collection("players").document(player_id).get()
+            p_doc = self.fstore.collection("players").document(str(player_id)).get()
             if not p_doc.exists:
                 raise ValueError(f"Player with id {player_id} not found")
-            assert player_id == p_doc.id
+            assert player_id == UUID(p_doc.id)
 
             player = FirestorePlayerRepository.map_firestore_dict(p_doc)
             self.by_id_cache[player_id] = player
@@ -43,7 +46,7 @@ class FirestorePlayerRepository(PlayerRepository):
         if external_id_type != "slack":
             raise NotImplementedError(f"unknown id type '{external_id_type}''")
         query_ref = self.fstore.collection("players").where(
-            "slack_id", "==", external_id
+            "external_id_slack", "==", external_id
         )
         results = [x for x in query_ref.stream()]
         if len(results) < 1:
@@ -76,14 +79,14 @@ class FirestoreMatchResultRepository(MatchResultRepository):
             match_dict = match.to_dict()
             # TODO: drop match and log warning when player can't be resolved
             r = MatchResultDouble(
-                self.player_repository.by_id(match_dict["goal_A"]),
-                self.player_repository.by_id(match_dict["strike_A"]),
-                self.player_repository.by_id(match_dict["goal_B"]),
-                self.player_repository.by_id(match_dict["strike_B"]),
-                match_dict["score_A"],
-                match_dict["score_B"],
+                self.player_repository.by_id(UUID(match_dict["a_goalie"])),
+                self.player_repository.by_id(UUID(match_dict["a_striker"])),
+                self.player_repository.by_id(UUID(match_dict["b_goalie"])),
+                self.player_repository.by_id(UUID(match_dict["b_striker"])),
+                match_dict["a_score"],
+                match_dict["b_score"],
                 match_dict["date"],
-                match.id,
+                UUID(match.id),
             )
             all_matches.append(r)
         return all_matches

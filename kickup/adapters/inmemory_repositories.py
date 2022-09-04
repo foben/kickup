@@ -35,7 +35,7 @@ class InMemoryPickupMatchRepository(PickupMatchRepository):
     def create_update(self, match: PickupMatch):
         if match.id is None or match.id == "":
             raise ValueError("No id set")
-        self.pickup_matches[str(match.id)] = match
+        self.pickup_matches[match.id] = match
 
 
 class InMemoryPlayerRepository(PlayerRepository):

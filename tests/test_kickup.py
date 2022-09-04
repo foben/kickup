@@ -1,7 +1,5 @@
-import datetime
 import logging
 import uuid
-from dataclasses import dataclass
 from uuid import UUID
 
 from kickup.adapters.firestore_repositories import FirestorePlayerRepository, FirestoreMatchResultRepository
@@ -17,11 +15,11 @@ def uid():
 
 
 STATIC_UUIDS = [
-    '196df377-305f-42ce-b0e0-163d2cb55eb9',
-    'f4ea980d-d553-44d7-b6a5-43217d93167c',
-    'e34034f6-a0b2-4052-a7e5-4ca8a40d081a',
-    'f939cd14-72fa-43f6-8993-2c8feeb7855b',
-    '61737c19-06cf-4806-bd06-76af2d42201a',
+    UUID('196df377-305f-42ce-b0e0-163d2cb55eb9'),
+    UUID('f4ea980d-d553-44d7-b6a5-43217d93167c'),
+    UUID('e34034f6-a0b2-4052-a7e5-4ca8a40d081a'),
+    UUID('f939cd14-72fa-43f6-8993-2c8feeb7855b'),
+    UUID('61737c19-06cf-4806-bd06-76af2d42201a'),
 ]
 
 
@@ -50,24 +48,23 @@ def test_pickup_match():
     for pl in dummy_players():
         player_repo.create_update(pl)
 
-    usecase = PickupMatchUsecase(pickup_match_repo, player_repo, match_repo)
-    usecase.create_pickup_match()
+    usecase = PickupMatchUsecase(pickup_match_repo, match_repo)
+    match = usecase.create_pickup_match()
 
     assert len(pickup_match_repo.get_all()) == 1
-    _id = str(pickup_match_repo.get_all()[0].id)
 
     except_text = ""
     try:
-        usecase.start_pickup_match(_id)
+        usecase.start_pickup_match(match)
     except ValueError as e:
         except_text = str(e)
     assert except_text == "Too few players to start"
 
-    for player_id in STATIC_UUIDS:
-        usecase.join_pickup_match(_id, player_id)
-    usecase.start_pickup_match(_id)
+    for p in dummy_players():
+        usecase.join_pickup_match(match, p)
+    usecase.start_pickup_match(match)
 
-    pickup_match = pickup_match_repo.by_id(_id)
+    pickup_match = pickup_match_repo.by_id(match.id)
     assert pickup_match.status == PickupMatchStatus.STARTED
     assert pickup_match.a_striker.id in STATIC_UUIDS
     assert pickup_match.a_goalie.id in STATIC_UUIDS

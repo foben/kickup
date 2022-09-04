@@ -1,3 +1,4 @@
+from uuid import UUID
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -16,7 +17,7 @@ class MatchResultRepository(ABC):
 
 class PlayerRepository(ABC):
     @abstractmethod
-    def by_id(self, player_id) -> Player:
+    def by_id(self, player_id: UUID) -> Player:
         raise NotImplementedError
 
     @abstractmethod
@@ -24,13 +25,13 @@ class PlayerRepository(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def by_external_id(self, external_id_type, external_id) -> Player:
+    def by_external_id(self, external_id_type: str, external_id: str) -> Player:
         raise NotImplementedError
 
 
 class PickupMatchRepository(ABC):
     @abstractmethod
-    def by_id(self, match_id) -> PickupMatch:
+    def by_id(self, match_id: UUID) -> PickupMatch:
         raise NotImplementedError
 
     @abstractmethod

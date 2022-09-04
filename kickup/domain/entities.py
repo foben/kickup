@@ -7,7 +7,7 @@ from enum import Enum
 
 @dataclass(frozen=True)
 class Player:
-    id: str
+    id: uuid.UUID
     name: str
 
 
@@ -20,7 +20,7 @@ class MatchResultDouble:
     a_score: int
     b_score: int
     date: datetime = field(default_factory=datetime.now)
-    id: str = field(default_factory=uuid.uuid4)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
 
 
 class PickupMatchStatus(Enum):
@@ -32,7 +32,7 @@ class PickupMatchStatus(Enum):
 
 @dataclass
 class PickupMatch:
-    id: str = field(default_factory=uuid.uuid4)
+    id: uuid.UUID = field(default_factory=uuid.uuid4)
     candidates: Set[Player] = field(default_factory=set)
     status: PickupMatchStatus = PickupMatchStatus.OPEN
     a_score: int = 0
