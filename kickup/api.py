@@ -2,12 +2,12 @@ from dataclasses import dataclass
 from flask import jsonify
 
 from kickup.domain.entities import MatchResultDouble
-from kickup.persistence import persistence, state as st
+from kickup.adapters import slack as st
 
 
 def respond(kickup):
     if kickup is None:
-        return jsonify( {
+        return jsonify({
                 'response_type': 'in_channel',
                 'text': ':skull_and_crossbones: Sorry, this kickup is dead',
         })

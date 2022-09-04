@@ -1,37 +1,23 @@
+import threading
+
+import requests
+
 from kickup import flask_app, kickup_app
 
-from flask import request, g
-from kickup import api, delayed
+from flask import request
+from kickup import api
 import json
 
 from kickup.domain.usecases.leaderboard import LeaderboardUsecase
 from kickup.domain.usecases.pickupmatch import PickupMatchUsecase
 from kickup.domain.usecases.playermapping import PlayerMappingUsecase
-from kickup.persistence import persistence
-from logging.config import dictConfig
 import logging
 
-from kickup.persistence.state import map_domain_pickup_match_to_slack_dto
-
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    }},
-    'handlers': {'wsgi': {
-        'class': 'logging.StreamHandler',
-        'stream': 'ext://flask.logging.wsgi_errors_stream',
-        'formatter': 'default'
-    }},
-    'root': {
-        'level': 'DEBUG',
-        'handlers': ['wsgi']
-    }
-})
+from kickup.adapters.slack import map_domain_pickup_match_to_slack_dto
 
 
 @flask_app.route("/api/slash", methods=['GET', 'POST'])
-def hello():
+def slack_slash_commands():
     logging.info("slash request received")
     if not 'text' in request.form or request.form['text'] == "":
         logging.debug(f'Received invalid command')
@@ -48,24 +34,15 @@ def hello():
     elif command == 'elo':
         uc = LeaderboardUsecase(kickup_app.match_result_repository)
         leaderboard = uc.calculate()
-        # leaderboard = elo.leaderboard(persistence.matches_sorted())
         return api.elo_leaderboard_resp(leaderboard)
     else:
         return api.error_response(f'Invalid command: "{ command }"')
 
 
 @flask_app.route("/api/interactive", methods=['GET', 'POST'])
-def interactive():
+def slack_interactive():
     payload = json.loads(request.form['payload'])
     user_slack_id = payload['user']['id']
-    # g.context_player = set_context_player(user_slack_id)
-
-    # kickup_num = int(payload['callback_id'])
-    # kickup = st.get_kickup(kickup_num)
-
-    # if not kickup:
-    #     logging.warning(f'Could not find kickup with id { kickup_num }')
-    #     return api.respond(None)
 
     pickup_match_id = payload['callback_id']
     response_kickup = None
@@ -113,7 +90,6 @@ def interactive():
                 pickup_match = uc_pickup.join_pickup_match(pickup_match_id, player.id)
                 response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
             elif button_cmd == 'dummyadd':
-
                 uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UD12PG33M").id)
                 uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UD276006T").id)
                 uc_pickup.join_pickup_match(pickup_match_id, uc_playermap.get_player_for_external_id("slack", "UCYCRPM37").id)
@@ -129,27 +105,23 @@ def interactive():
                 pickup_match = uc_pickup.resolve_match(pickup_match_id)
                 response_kickup = map_domain_pickup_match_to_slack_dto(pickup_match)
 
-                # if kickup.resolve_match():
-                #     logging.info(f'Kickup {kickup.num} resolved, persisting to DB')
-                #     persistence.save_kickup_match(kickup)
-
     except KickupException as ke:
-        delayed.delayed_error(ke, payload['response_url'])
+        delayed_error(ke, payload['response_url'])
         logging.error(ke)
     finally:
         return api.respond(response_kickup)
 
 
-# def set_context_player(user_slack_id):
-#     player = persistence.player_by_slack_id(user_slack_id)
-#     def context_player():
-#         if not player:
-#             raise KickupException(f'Could not find registered player with your Slack ID!')
-#         return player
-#     return context_player
-
 class KickupException(Exception):
     pass
-#
-# if __name__ == '__main__':
-#     app.run(debug=True, host='0.0.0.0', port=8000)
+
+
+def delayed_error(msg, response_url):
+    def request_async(msg, response_url):
+        resp = requests.post(response_url, json={
+            'response_type': 'ephemeral',
+            'replace_original': False,
+            'text': f':warning: { msg }',
+    })
+    thread = threading.Thread(target=request_async, kwargs={'msg': msg, 'response_url': response_url})
+    thread.start()
