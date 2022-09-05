@@ -163,8 +163,8 @@ class FirestorePickupMatchRepository(PickupMatchRepository):
             d["b_score"],
             self.player_repository.by_id(UUID(d["a_goalie"])) if d["a_goalie"] else None,
             self.player_repository.by_id(UUID(d["a_striker"])) if d["a_striker"] else None,
-            self.player_repository.by_id(UUID(d["bb_goalie"])) if d["b_goalie"] else None,
-            self.player_repository.by_id(UUID(d["bb_striker"])) if d["b_striker"] else None,
+            self.player_repository.by_id(UUID(d["b_goalie"])) if d["b_goalie"] else None,
+            self.player_repository.by_id(UUID(d["b_striker"])) if d["b_striker"] else None,
         )
 
         return pickup_match
@@ -187,10 +187,10 @@ class FirestorePickupMatchRepository(PickupMatchRepository):
         dao = FirestorePickupMatchDao(
             [str(p.id) for p in match.candidates],
             match.status.value,
-            str(match.a_goalie) if match.a_goalie else None,
-            str(match.a_striker) if match.a_striker else None,
-            str(match.b_goalie) if match.b_goalie else None,
-            str(match.b_striker) if match.b_striker else None,
+            str(match.a_goalie.id) if match.a_goalie else None,
+            str(match.a_striker.id) if match.a_striker else None,
+            str(match.b_goalie.id) if match.b_goalie else None,
+            str(match.b_striker.id) if match.b_striker else None,
             match.a_score,
             match.b_score
         )
