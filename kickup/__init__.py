@@ -4,7 +4,7 @@ from flask import Flask
 
 from kickup.adapters.firestore_repositories import (
     FirestorePlayerRepository,
-    FirestoreMatchResultRepository,
+    FirestoreMatchResultRepository, FirestorePickupMatchRepository,
 )
 from kickup.adapters.inmemory_repositories import (
     InMemoryPickupMatchRepository,
@@ -55,6 +55,7 @@ class KickUpApp:
 
 
 # Poor man's dependency injection coming up...
+# this is terrible, prevents importing the kickup package
 
 
 # KICKUP_MODE = "IN_MEMORY"
@@ -78,12 +79,14 @@ if KICKUP_MODE == "IN_MEMORY":
 
     )
 elif KICKUP_MODE == "FIRESTORE":
-    IN_MEMORY_pickup_match_repo = InMemoryPickupMatchRepository()
+    # IN_MEMORY_pickup_match_repo = InMemoryPickupMatchRepository()
+
     firestore_player_repo = FirestorePlayerRepository()
+    firestore_pickup_match_repo = FirestorePickupMatchRepository(firestore_player_repo)
     firestore_match_result_repo = FirestoreMatchResultRepository(firestore_player_repo)
 
     kickup_app = KickUpApp(
-        IN_MEMORY_pickup_match_repo,
+        firestore_pickup_match_repo,
         firestore_player_repo,
         firestore_match_result_repo
     )
