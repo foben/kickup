@@ -21,5 +21,7 @@ COPY ./kickup $APP_HOME/kickup
 WORKDIR $APP_HOME
 RUN pip install .
 
+ENV PROPAGATE_EXCEPTIONS=True
+
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 kickup:app
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 kickup:flask_app

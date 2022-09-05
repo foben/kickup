@@ -23,6 +23,7 @@ class FirestorePlayerRepository(PlayerRepository):
         # TODO: inject
         self.fstore = firestore.Client(project="kickup-360018")
         self.by_id_cache = {}
+        logging.info("player repo seems ok")
 
     def by_id(self, player_id: UUID) -> Player:
         if not isinstance(player_id, UUID):

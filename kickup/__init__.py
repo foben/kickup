@@ -1,3 +1,5 @@
+import logging
+import os
 from flask import Flask
 
 from kickup.adapters.firestore_repositories import (
@@ -33,6 +35,7 @@ dictConfig(
             }
         },
         "root": {"level": "DEBUG", "handlers": ["wsgi"]},
+        "disable_existing_loggers": False,
     }
 )
 
@@ -51,12 +54,53 @@ class KickUpApp:
         self.match_result_repository = match_result_repository
 
 
-player_repo = FirestorePlayerRepository()
-kickup_app = KickUpApp(
-    InMemoryPickupMatchRepository(),
-    player_repo,
-    # InMemoryMatchResultRepository(),
-    FirestoreMatchResultRepository(player_repo),
-)
+# Poor man's dependency injection coming up...
 
+
+# KICKUP_MODE = "IN_MEMORY"
+KICKUP_MODE = "FIRESTORE"
+# KICKUP_MODE = "MIXED"
+
+mode = os.environ.get("KICKUP_MODE")
+if mode is not  None and mode not in ["IN_MEMORY", "FIRESTORE", "MIXED"]:
+    KICKUP_MODE = mode
+
+logging.info(f"Running KickUp in {KICKUP_MODE} mode")
+
+kickup_app = None
+
+if KICKUP_MODE == "IN_MEMORY":
+    kickup_app = KickUpApp(
+        InMemoryPickupMatchRepository(),
+        InMemoryPlayerRepository(),
+        # player_repo,
+        InMemoryMatchResultRepository(),
+
+    )
+elif KICKUP_MODE == "FIRESTORE":
+    IN_MEMORY_pickup_match_repo = InMemoryPickupMatchRepository()
+    firestore_player_repo = FirestorePlayerRepository()
+    firestore_match_result_repo = FirestoreMatchResultRepository(firestore_player_repo)
+
+    kickup_app = KickUpApp(
+        IN_MEMORY_pickup_match_repo,
+        firestore_player_repo,
+        firestore_match_result_repo
+    )
+
+elif KICKUP_MODE == "MIXED":
+    IN_MEMORY_pickup_match_repo = InMemoryPickupMatchRepository()
+    firestore_player_repo = FirestorePlayerRepository()
+    IN_MEMORY_match_result_repo = InMemoryMatchResultRepository()
+
+    kickup_app = KickUpApp(
+        IN_MEMORY_pickup_match_repo,
+        firestore_player_repo,
+        IN_MEMORY_match_result_repo
+    )
+
+logging.info(f"Setting up application in {KICKUP_MODE} mode completed")
+
+# Flask documentation says this needs to be at the bottom.
+# Is this actually true?
 import kickup.endpoints
