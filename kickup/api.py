@@ -41,25 +41,10 @@ def button_resp(kickup):
                 *att_players(kickup),
                 *att_buttons(kickup),
                 *result(kickup),
-                *att_footer(kickup),
+                # *att_footer(kickup),
             ],
         }
     )
-
-
-def att_footer(kickup):
-    warnings = kickup.process_warnings()
-    if not warnings:
-        return []
-    warn_lines = "\n".join([f":warning: { w }" for w in warnings])
-    return [
-        {
-            "fallback": "Can't display this here :(",
-            "callback_id": f"{ kickup.num } ",
-            "footer": warn_lines,
-            "color": "warning",
-        }
-    ]
 
 
 def att_players(kickup):

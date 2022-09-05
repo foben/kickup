@@ -13,7 +13,7 @@ class LeaderboardUsecase:
 
     def calculate(self):
         all_matches = self.match_result_repo.all_double_results()
-        logging.debug(f"retrieved {len(all_matches)} matches from database")
+        logging.debug(f"calculating leaderboard based on {len(all_matches)} matches")
         sorted_matches = sorted(all_matches, key=lambda m: m.date)
 
         scoring = EloGoalDiffScore(K=30, F=400, initial=1000)

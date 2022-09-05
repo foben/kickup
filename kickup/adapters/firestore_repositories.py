@@ -6,6 +6,8 @@ from typing import List
 from google.cloud import firestore
 from google.cloud.firestore_v1 import DocumentSnapshot
 
+from timeit import default_timer as timer
+
 from kickup.domain.entities import MatchResultDouble, Player, PickupMatch, PickupMatchStatus
 from kickup.domain.repositories import MatchResultRepository, PlayerRepository, PickupMatchRepository
 
@@ -83,7 +85,8 @@ class FirestoreMatchResultRepository(MatchResultRepository):
         self.fstore = firestore.Client(project="kickup-360018")
 
     def all_double_results(self) -> List[MatchResultDouble]:
-        logging.debug("retrieving all matches from GCP firestore")
+        start = timer()
+        logging.debug("retrieving all matches from firestore")
 
         match_coll = self.fstore.collection("matches")
         # match_docs = match_coll.stream()
@@ -102,6 +105,7 @@ class FirestoreMatchResultRepository(MatchResultRepository):
                 UUID(match.id),
             )
             all_matches.append(r)
+        logging.debug(f"received {len(all_matches)} matches from firestore in {timer() - start} seconds")
         return all_matches
 
     def save_double_result(self, match_result: MatchResultDouble):
@@ -167,7 +171,8 @@ class FirestorePickupMatchRepository(PickupMatchRepository):
         if match_id not in self.by_id_cache:
             m_doc = self.fstore.collection("pickup_matches").document(str(match_id)).get()
             if not m_doc.exists:
-                raise ValueError(f"Pickup Match with id {match_id} not found")
+                logging.info(f"Pickup Match with id {match_id} not found")
+                return None
             assert match_id == UUID(m_doc.id)
             pickup_match = self.map_firestore_doc(m_doc)
             self.by_id_cache[match_id] = pickup_match

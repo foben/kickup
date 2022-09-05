@@ -31,16 +31,8 @@ class SlackPickupMatchTDO:
         self.state = OPEN
         self.players = set()
         self.pairing = None
-        self.warnings = set()
         self.score_B = 0
         self.score_A = 0
-
-    def process_warnings(self):
-        if not self.warnings:
-            return None
-        result = self.warnings.copy()
-        self.warnings = set()
-        return result
 
 
 def map_domain_state(domain_state: PickupMatchStatus) -> str:
@@ -80,7 +72,6 @@ def map_domain_pickup_match_to_slack_dto(
     k.players = set(pickup_match.candidates)
 
     k.pairing = map_domain_pickup_match_pairing(pickup_match)
-    k.warnings = {"warnings not mappable"}
     k.score_A = pickup_match.a_score
     k.score_B = pickup_match.b_score
     return k
