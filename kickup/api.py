@@ -63,6 +63,7 @@ def display_name(slack_player_dto: SlackPlayerDTO) -> str:
     else:
         return slack_player_dto.name
 
+
 def pairing(kickup, estimates=False):
     # TODO: re-implement preview in domain
     # est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
@@ -155,20 +156,20 @@ def att_buttons(kickup):
                 "actions": [
                     {
                         "name": "kickup",
-                        "text": ":arrow_down: Join",
+                        "text": "⤵️Join",
                         "type": "button",
                         "value": "join",
                         "style": "primary",
                     },
                     {
                         "name": "kickup",
-                        "text": ":soccer: Start",
+                        "text": "⚽ Start",
                         "type": "button",
                         "value": "start",
                     },
                     {
                         "name": "kickup",
-                        "text": ":no_entry_sign: Cancel",
+                        "text": "❌ Cancel",
                         "type": "button",
                         "value": "cancel",
                         "style": "danger",
@@ -218,13 +219,13 @@ def att_buttons(kickup):
                     },
                     {
                         "name": "kickup",
-                        "text": ":heavy_check_mark: Resolve",
+                        "text": "✅ Resolve",
                         "type": "button",
                         "value": "resolve",
                     },
                     {
                         "name": "kickup",
-                        "text": ":no_entry_sign: Cancel",
+                        "text": "❌ Cancel",
                         "type": "button",
                         "value": "cancel",
                     },
