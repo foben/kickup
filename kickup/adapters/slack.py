@@ -49,7 +49,10 @@ def map_domain_state(domain_state: PickupMatchStatus) -> str:
 
 
 def map_domain_player(domain_player: Player) -> SlackPlayerDTO:
-    return SlackPlayerDTO(domain_player.name, "unmappable", domain_player.id)
+    slack_id = None
+    if "slack" in domain_player.external_ids:
+        slack_id = domain_player.external_ids["slack"]
+    return SlackPlayerDTO(domain_player.name, slack_id, str(domain_player.id))
 
 
 def map_domain_pickup_match_pairing(pickup_match: PickupMatch) -> SlackPairingDTO:

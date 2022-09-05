@@ -15,10 +15,14 @@ from kickup.domain.repositories import MatchResultRepository, PlayerRepository, 
 class FirestorePlayerRepository(PlayerRepository):
     @classmethod
     def map_firestore_doc(cls, fstore_player: DocumentSnapshot) -> Player:
-        return Player(
+        player_dict = fstore_player.to_dict()
+        p = Player(
             UUID(fstore_player.id),
-            fstore_player.to_dict()["name"],
+            player_dict["name"],
         )
+        if "external_id_slack" in player_dict:
+            p.external_ids["slack"] = player_dict["external_id_slack"]
+        return p
 
     def __init__(self):
         logging.debug("Setting up Firestore client for PlayerRepository")

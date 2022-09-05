@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from flask import jsonify
 
+from kickup.adapters.slack import SlackPlayerDTO
 from kickup.domain.entities import MatchResultDouble
 from kickup.adapters import slack as st
 
@@ -56,15 +57,21 @@ def att_players(kickup):
         return []
 
 
+def display_name(slack_player_dto: SlackPlayerDTO) -> str:
+    if slack_player_dto.slack_id:
+        return f"<@{slack_player_dto.slack_id}>"
+    else:
+        return slack_player_dto.name
+
 def pairing(kickup, estimates=False):
     # TODO: re-implement preview in domain
     # est_A = f' (max +{int(kickup.max_win_A)})' if estimates else ''
     # est_B = f' (max +{int(kickup.max_win_B)})' if estimates else ''
+    # est_A, est_B = 0, 0
 
-    est_A, est_B = 0, 0
     return [
         {
-            "text": f":goal_net:<@{ kickup.pairing.goal_A.slack_id }>({kickup.pairing.goal_A.name}){est_A}\n:athletic_shoe:<@{ kickup.pairing.strike_A.slack_id }>({kickup.pairing.strike_A.name}){est_A}",
+            "text": f":goal_net:{display_name(kickup.pairing.goal_A)}\n:athletic_shoe:{display_name(kickup.pairing.strike_A)}",
             "fallback": "Can't display this here :(",
             "callback_id": f"{ kickup.num }",
             "color": "#000000",
@@ -77,7 +84,7 @@ def pairing(kickup, estimates=False):
             "attachment_type": "default",
         },
         {
-            "text": f":athletic_shoe:<@{ kickup.pairing.strike_B.slack_id }>({kickup.pairing.strike_B.name}){est_B}\n:goal_net:<@{ kickup.pairing.goal_B.slack_id }>({kickup.pairing.goal_B.name}){est_B}",
+            "text": f":athletic_shoe:{display_name(kickup.pairing.strike_B)}\n:goal_net:{display_name(kickup.pairing.goal_B)}",
             "fallback": "Can't display this here :(",
             "callback_id": f"{ kickup.num }",
             "color": "#0000FF",

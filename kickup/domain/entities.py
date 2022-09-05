@@ -9,6 +9,7 @@ from enum import Enum
 class Player:
     id: uuid.UUID
     name: str
+    external_ids: dict = field(default_factory=dict, hash=False)
 
 
 @dataclass
