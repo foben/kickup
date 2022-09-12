@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section class="section has-background-lter">
+        {# First Tile Row #}
+        <div class="tile is-ancestor">
+            <div class="tile is-parent is-4">
+                <article class="tile is-child box ">
+                    <div class="container has-text-centered">
+                        <figure class="image" style="margin:auto; height: 256px; width: 256px;">
+                            <img class="is-rounded" height="256" width="256" src="{{ slack_user.image }}">
+                        </figure>
+                    </div>
+                </article>
+            </div>
+            <div class="tile is-parent is-4">
+                <article class="tile is-child box has-background-primary-light">
+                    <p class="is-size-1">Total Games</p>
+                    <p style="font-size: 100px;"
+                       class="has-text-right has-text-weight-bold">{{ player_stats.total_games }}</p>
+                </article>
+            </div>
+            <div class="tile is-parent is-4">
+                <article class="tile is-child box has-background-primary-light">
+                    <p class="is-size-1">Current Elo</p>
+                    <p style="font-size: 100px;"
+                       class="has-text-right has-text-weight-bold">{{ player_stats.current_elo }}</p>
+                </article>
+            </div>
+        </div>
+
+        {# Second Tile Row #}
+        <div class="tile is-ancestor">
+            <div class="tile is-parent is-4">
+                <article class="tile is-child box has-background-link has-text-light">
+                    <p class="is-size-1">Streak</p>
+                    <p style="font-size: 100px;"
+                       class="has-text-right has-text-weight-bold {{ color_class(player_stats.current_streak) }}">
+                        {{ with_prefix(player_stats.current_streak) }}
+                    </p>
+                </article>
+            </div>
+            <div class="tile is-parent is-4">
+                <article class="tile is-child box has-background-info has-text-light">
+                    <p class="is-size-1">This Week</p>
+                    <p style="font-size: 100px;"
+                       class="has-text-right has-text-weight-bold {{ color_class(player_stats.elo_this_week) }}">
+                        {{ with_prefix(player_stats.elo_this_week) }}
+                    </p>
+                </article>
+            </div>
+            <div class="tile is-parent is-4">
+                <article class="tile is-child box has-background-info has-text-light">
+                    <p class="is-size-1">This Month</p>
+                    <p style="font-size: 100px;"
+                       class="has-text-right has-text-weight-bold {{ color_class(player_stats.elo_this_month) }}">
+                        {{ with_prefix(player_stats.elo_this_month) }}
+                    </p>
+                </article>
+                </article>
+            </div>
+        </div>
+
+        {# Third Tile Row #}
+        <div class="tile is-ancestor">
+            <div class="tile is-parent is-12">
+                <article class="tile is-child box has-background-primary">
+                    <div class="container">
+                        <table class="table is-striped is-hoverable">
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>🥅</th>
+                                <th>👟</th>
+                                <th></th>
+                                <th>👟</th>
+                                <th>🥅</th>
+                                <th>elo</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for match in last_matches %}
+                                {#                                <tr class="{{ match_row_class(match) }}">#}
+                                <tr class="">
+                                    <td>{{ match.date.strftime('%d.%m.%Y  - %H:%M') }}</td>
+                                    <td class="{{ 'has-background-primary-light' if match.position == "a_goalie" }}">
+                                        <figure class="image" style="margin:auto; height: 32px; width: 32px;">
+                                            <img class="is-rounded" height="32" width="32"
+                                                 title="{{ match.a_goalie.name }}"
+                                                 src="{{ match.a_goalie.img_url }}">
+                                        </figure>
+                                    </td>
+                                    <td class="{{ 'has-background-primary-light' if match.position == "a_striker" }}">
+                                        <figure class="image" style="margin:auto; height: 32px; width: 32px;">
+                                            <img class="is-rounded" height="32" width="32"
+                                                 title="{{ match.a_striker.name }}"
+                                                 src="{{ match.a_striker.img_url }}">
+                                        </figure>
+                                    </td>
+
+                                    <td>{{ match.a_score }}:{{ match.b_score }}</td>
+
+                                    <td class="{{ 'has-background-primary-light' if match.position == "b_striker" }}">
+                                        <figure class="image" style="margin:auto; height: 32px; width: 32px;">
+                                            <img class="is-rounded" height="32" width="32"
+                                                 title="{{ match.b_striker.name }}"
+                                                 src="{{ match.b_striker.img_url }}">
+                                        </figure>
+                                    </td>
+                                    <td class="{{ 'has-background-primary-light' if match.position == "b_goalie" }}">
+                                        <figure class="image" style="margin:auto; height: 32px; width: 32px;">
+                                            <img class="is-rounded" height="32" width="32"
+                                                 title="{{ match.b_goalie.name }}"
+                                                 src="{{ match.b_goalie.img_url }}">
+                                        </figure>
+                                    </td>
+                                    <td><span class="tag is-rounded {{ match_tag_class(match) }}">{{ with_prefix(match.elo) }}</span></td>
+
+                                </tr>
+
+                            {% endfor %}
+                            {#                            <tr class="has-background-danger-dark">#}
+                            {#                                <td>01.09.2022</td>#}
+                            {#                                <td>👟</td>#}
+                            {#                                <td>won</td>#}
+                            {#                            </tr>#}
+                            {#                            <tr class="has-background-danger-dark">#}
+                            {#                                <td>01.09.2022</td>#}
+                            {#                                <td>🥅</td>#}
+                            {#                                <td>won</td>#}
+                            {#                            </tr>#}
+                            {#                            <tr class="has-background-success-dark">#}
+                            {#                                <td>01.09.2022</td>#}
+                            {#                                <td>🥅</td>#}
+                            {#                                <td>won</td>#}
+                            {#                            </tr>#}
+                            {#                            <tr class="has-background-danger-dark">#}
+                            {#                                <td>01.09.2022</td>#}
+                            {#                                <td>🥅</td>#}
+                            {#                                <td>won</td>#}
+                            {#                            </tr>#}
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+    </section>
+
+{% endblock %}

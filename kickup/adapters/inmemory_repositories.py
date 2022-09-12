@@ -18,6 +18,9 @@ class InMemoryMatchResultRepository(MatchResultRepository):
     def save_double_result(self, match_result: MatchResultDouble):
         self.matches[match_result.id] = match_result
 
+    def games_by_player(self, player: Player) -> List[MatchResultDouble]:
+        raise NotImplementedError
+
 
 class InMemoryPickupMatchRepository(PickupMatchRepository):
     def __init__(self):

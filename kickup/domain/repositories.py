@@ -14,6 +14,10 @@ class MatchResultRepository(ABC):
     def save_double_result(self, match_result: MatchResultDouble):
         raise NotImplementedError
 
+    @abstractmethod
+    def games_by_player(self, player: Player) -> List[MatchResultDouble]:
+        raise NotImplementedError
+
 
 class PlayerRepository(ABC):
     @abstractmethod

@@ -6,15 +6,14 @@ import requests
 from kickup import flask_app, kickup_app
 
 from flask import request
-from kickup import api
 import json
 
-from kickup.api import error_response
+from kickup.adapters.slack import response
 from kickup.domain.usecases.leaderboard import LeaderboardUsecase
 from kickup.domain.usecases.pickupmatch import PickupMatchUsecase
 import logging
 
-from kickup.adapters.slack import map_domain_pickup_match_to_slack_dto
+from kickup.adapters.slack.objects import map_domain_pickup_match_to_slack_dto
 
 
 @flask_app.route("/api/slash", methods=["GET", "POST"])
@@ -22,7 +21,7 @@ def slack_slash_commands():
     logging.info("slash request received")
     if not "text" in request.form or request.form["text"] == "":
         logging.debug(f"Received invalid command")
-        return api.error_response("Invalid command")
+        return response.error_response("Invalid command")
     command, _, _ = request.form["text"].strip().partition(" ")
     if command == "new":
         pickup_match = PickupMatchUsecase(
@@ -31,13 +30,13 @@ def slack_slash_commands():
         ).create_pickup_match()
         mapped_pickup = map_domain_pickup_match_to_slack_dto(pickup_match)
         logging.info(f"Created new kickup with identifier { mapped_pickup.num }")
-        return api.respond(mapped_pickup)
+        return response.respond(mapped_pickup)
     elif command == "elo":
         uc = LeaderboardUsecase(kickup_app.match_result_repository)
         leaderboard = uc.calculate()
-        return api.elo_leaderboard_resp(leaderboard)
+        return response.elo_leaderboard_resp(leaderboard)
     else:
-        return api.error_response(f'Invalid command: "{ command }"')
+        return response.error_response(f'Invalid command: "{ command }"')
 
 
 @flask_app.route("/api/interactive", methods=["GET", "POST"])
@@ -45,6 +44,7 @@ def slack_interactive():
     payload = json.loads(request.form["payload"])
 
     user_slack_id: str = payload["user"]["id"]
+
     pickup_match_id: UUID = UUID(payload["callback_id"])
 
     target_pickup_match = kickup_app.pickup_match_repository.by_id(pickup_match_id)
@@ -52,14 +52,14 @@ def slack_interactive():
         logging.warning(
             f"could not get a PickupMatch for the callback_id {pickup_match_id}"
         )
-        return error_response("couldn't find a PickupMatch for your request")
+        return response.error_response("couldn't find a PickupMatch for your request")
 
     acting_player = kickup_app.player_repository.by_external_id("slack", user_slack_id)
     if not acting_player:
         logging.warning(
             f"could not find a Player for the external slack-id {user_slack_id}"
         )
-        return error_response("it looks like you're not set up for KickUp 😥")
+        return response.error_response("it looks like you're not set up for KickUp 😥")
 
     modified_pickup_match = None
     action = payload["actions"][0]
@@ -142,7 +142,7 @@ def slack_interactive():
         logging.error(ke)
     finally:
         response_dto = map_domain_pickup_match_to_slack_dto(modified_pickup_match)
-        return api.respond(response_dto)
+        return response.respond(response_dto)
 
 
 class KickupException(Exception):

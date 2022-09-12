@@ -4,6 +4,7 @@ from uuid import UUID
 
 from kickup.adapters.firestore_repositories import FirestorePlayerRepository, FirestoreMatchResultRepository
 from kickup.domain.entities import Player, MatchResultDouble, PickupMatchStatus
+from kickup.domain.usecases.extended_leaderboard import ExtendedLeaderboardUsecase
 from kickup.domain.usecases.leaderboard import LeaderboardUsecase
 from kickup.domain.usecases.pickupmatch import PickupMatchUsecase
 from kickup.adapters.inmemory_repositories import InMemoryMatchResultRepository, InMemoryPickupMatchRepository, \
@@ -96,7 +97,19 @@ def test_firestore_leaderboard():
     assert True
 
 
+@logname
+def test_firestore_extended_leaderboard():
+    player_repo = FirestorePlayerRepository()
+    match_result_repo = FirestoreMatchResultRepository(player_repo)
+
+    ext_leaderboard_uc = ExtendedLeaderboardUsecase(match_result_repo)
+    res = ext_leaderboard_uc.get_leaderboard()
+    print(res)
+    assert True
+
+
 if __name__ == '__main__':
+    test_firestore_extended_leaderboard()
     test_firestore_leaderboard()
     test_pickup_match()
     test_elo_leaderboard()

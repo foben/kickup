@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from flask import jsonify
 
-from kickup.adapters.slack import SlackPlayerDTO
+from kickup.adapters.slack.objects import SlackPlayerDTO
 from kickup.domain.entities import MatchResultDouble
-from kickup.adapters import slack as st
+from kickup.adapters.slack import objects as st
 
 
 def respond(kickup):

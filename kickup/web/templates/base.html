@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Welcome to Kickup!</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+</head>
+<body>
+<nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+        <a class="navbar-item" href="#">
+            <img src={{ url_for('static', filename='logo.jpg') }} width="50" height="50">
+            <h1 class="title">Kickup</h1>
+        </a>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+    </div>
+
+
+    <div id="navbarBasicExample" class="navbar-menu">
+        <div class="navbar-start">
+            <a class="navbar-item" href="{{ url_for('user_profile') }}">
+                Profile
+            </a>
+
+        </div>
+
+        <div class="navbar-end">
+            <div class="navbar-item">
+                <div class="buttons">
+                    <a class="button is-warning" href="{{ url_for('logout') }}">
+                        <strong>Log out</strong>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+{% with messages = get_flashed_messages() %}
+{#{% with messages = get_flashed_messages(debug=True) %}#}
+    {% if messages %}
+        <section class="section">
+
+            {% for message in messages %}
+                <div class="notification is-warning">
+                    <button class="delete"></button>
+                    {{ message }}
+                </div>
+            {% endfor %}
+
+        </section>
+    {% endif %}
+{% endwith %}
+{#<section class="section">#}
+    {#    <div class="container">#}
+    {% block content %}{% endblock %}
+    {#    </div>#}
+{#</section>#}
+
+</body>
+</html>

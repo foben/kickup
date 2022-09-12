@@ -13,6 +13,7 @@ from kickup.domain.repositories import MatchResultRepository, PlayerRepository, 
 
 
 class FirestorePlayerRepository(PlayerRepository):
+
     @classmethod
     def map_firestore_doc(cls, fstore_player: DocumentSnapshot) -> Player:
         player_dict = fstore_player.to_dict()
@@ -53,6 +54,11 @@ class FirestorePlayerRepository(PlayerRepository):
     def by_external_id(self, external_id_type, external_id) -> Player:
         if external_id_type != "slack":
             raise NotImplementedError(f"unknown id type '{external_id_type}''")
+
+        #TODO: remove debug mapping
+        if external_id == "U041FQZ3VAP":
+            external_id = "UCYF8JAFL"
+
         query_ref = self.fstore.collection("players").where(
             "external_id_slack", "==", external_id
         )
@@ -88,6 +94,21 @@ class FirestoreMatchResultRepository(MatchResultRepository):
         # TODO: inject
         self.fstore = firestore.Client(project="kickup-360018")
 
+    def map_firestore_doc(self, fstore_result: DocumentSnapshot) -> MatchResultDouble:
+        match_dict = fstore_result.to_dict()
+        # TODO: drop match and log warning when player can't be resolved
+        r = MatchResultDouble(
+            self.player_repository.by_id(UUID(match_dict["a_goalie"])),
+            self.player_repository.by_id(UUID(match_dict["a_striker"])),
+            self.player_repository.by_id(UUID(match_dict["b_goalie"])),
+            self.player_repository.by_id(UUID(match_dict["b_striker"])),
+            match_dict["a_score"],
+            match_dict["b_score"],
+            match_dict["date"],
+            UUID(fstore_result.id),
+        )
+        return r
+
     def all_double_results(self) -> List[MatchResultDouble]:
         start = timer()
         logging.debug("retrieving all matches from firestore")
@@ -96,19 +117,9 @@ class FirestoreMatchResultRepository(MatchResultRepository):
         # match_docs = match_coll.stream()
         all_matches = []
         for match in match_coll.stream():
-            match_dict = match.to_dict()
-            # TODO: drop match and log warning when player can't be resolved
-            r = MatchResultDouble(
-                self.player_repository.by_id(UUID(match_dict["a_goalie"])),
-                self.player_repository.by_id(UUID(match_dict["a_striker"])),
-                self.player_repository.by_id(UUID(match_dict["b_goalie"])),
-                self.player_repository.by_id(UUID(match_dict["b_striker"])),
-                match_dict["a_score"],
-                match_dict["b_score"],
-                match_dict["date"],
-                UUID(match.id),
-            )
-            all_matches.append(r)
+            r = self.map_firestore_doc(match)
+            if r is not None:
+                all_matches.append(r)
         logging.debug(f"received {len(all_matches)} matches from firestore in {timer() - start} seconds")
         return all_matches
 
@@ -127,6 +138,15 @@ class FirestoreMatchResultRepository(MatchResultRepository):
             asdict(dao)
         )
         logging.info(f"successfully written match result {match_result.id} to database")
+
+    def games_by_player(self, player: Player) -> List[MatchResultDouble]:
+        results = []
+        for field in ["a_goalie", "a_striker", "b_goalie", "b_striker"]:
+            for r in self.fstore.collection("matches").where(field, "==", str(player.id)).stream():
+                mr = self.map_firestore_doc(r)
+                if r is not None:
+                    results.append(mr)
+        return results
 
 
 @dataclass
