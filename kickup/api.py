@@ -72,20 +72,34 @@ def pairing(kickup, estimates=False):
 
     return [
         {
-            "text": f":goal_net:{display_name(kickup.pairing.goal_A)}\n:athletic_shoe:{display_name(kickup.pairing.strike_A)}",
+            "text": f":goal_net:{display_name(kickup.pairing.goal_A)}",
             "fallback": "Can't display this here :(",
             "callback_id": f"{ kickup.num }",
             "color": "#000000",
             "attachment_type": "default",
         },
         {
-            "text": f"   VS  ",
+            "text": f":athletic_shoe:{display_name(kickup.pairing.strike_A)}",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{ kickup.num }",
+            "color": "#000000",
+            "attachment_type": "default",
+        },
+        {
+            "text": "VS",
             "fallback": "Can't display this here :(",
             "callback_id": f"{ kickup.num }",
             "attachment_type": "default",
         },
         {
-            "text": f":athletic_shoe:{display_name(kickup.pairing.strike_B)}\n:goal_net:{display_name(kickup.pairing.goal_B)}",
+            "text": f":athletic_shoe:{display_name(kickup.pairing.strike_B)}",
+            "fallback": "Can't display this here :(",
+            "callback_id": f"{ kickup.num }",
+            "color": "#0000FF",
+            "attachment_type": "default",
+        },
+        {
+            "text": f":goal_net:{display_name(kickup.pairing.goal_B)}",
             "fallback": "Can't display this here :(",
             "callback_id": f"{ kickup.num }",
             "color": "#0000FF",
@@ -156,7 +170,7 @@ def att_buttons(kickup):
                 "actions": [
                     {
                         "name": "kickup",
-                        "text": "⤵️Join",
+                        "text": "⤵️ Join",
                         "type": "button",
                         "value": "join",
                         "style": "primary",
